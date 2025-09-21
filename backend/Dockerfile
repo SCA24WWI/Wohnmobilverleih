@@ -16,4 +16,4 @@ COPY . .
 EXPOSE 3001
 
 # 6. Der Befehl, um die Anwendung zu starten
-CMD [ "node", "index.js" ]
+CMD [ "node", "server.js" ]
