@@ -1,0 +1,19 @@
+version: '3.8' # Version der Compose-Syntax
+
+services:
+  db:
+    image: postgres:16-alpine # Ein schlankes Postgres-Image
+    restart: always
+    environment:
+      - POSTGRES_USER=app_user
+      - POSTGRES_PASSWORD=sicheres_passwort
+      - POSTGRES_DB=wohnmobil_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+    # Docker verwaltet dieses Volume. Die Daten bleiben auch nach
+    # dem Stoppen und Entfernen des Containers erhalten.
