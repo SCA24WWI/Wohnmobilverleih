@@ -1,19 +1,36 @@
-const http = require('http');
-const port = 3001;
+const express = require('express');
+const { Pool } = require('pg'); // PostgreSQL-Treiber
 
-const server = http.createServer((req, res) => {
-  if (req.url === '/') {
-    // Schreibe den Erfolgs-Header (Status-Code 200)
-    res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
-    // Sende die Antwort und beende die Verbindung
-    res.end('Hallo vom Backend! ✨');
-  } else {
-    // Wenn eine andere URL aufgerufen wird, sende einen 404 "Not Found"
-    res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
-    res.end('Seite nicht gefunden');
-  }
+const server = express();
+const PORT = 3000;
+
+server.use(express.json());
+
+const pool = new Pool({
+    user: 'app_user',
+    host: 'localhost', 
+    database: 'wohnmobil_db',
+    password: 'sicheres_passwort',
+    port: 5432,
 });
 
-server.listen(port, () => {
-  console.log(`Minimalistischer Node.js Server läuft auf Port ${port}`);
+// --- API-ENDPUNKTE (ROUTEN) ---
+
+server.get('/', (req, res) => {
+    res.send('Willkommen auf dem Wohnmobilverleih-API-Server!');
+});
+
+// ENDPUNKT: Alle Wohnmobile aus der Datenbank holen
+server.get('/api/wohnmobile', async (req, res) => {
+    try {
+        const alleWohnmobile = await pool.query("SELECT * FROM wohnmobile");
+        res.status(200).json(alleWohnmobile.rows);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send("Server Fehler beim Abrufen der Wohnmobile");
+    }
+});
+
+server.listen(PORT, () => {
+    console.log(`Server läuft auf Port ${PORT}`);
 });
