@@ -51,14 +51,43 @@ router.post('/create', async (req, res) => {
 
 // ENDPUNKT: PUT /api/wohnmobile/:id/edit - Aktualisiert ein bestehendes Wohnmobil.
 // ZUGRIFF: Nur für den Besitzer des Wohnmobils oder 'admin'.
-router.put('/:id', (req, res) => {
-    res.json({ message: `PUT update vehicle ${req.params.id} - to be implemented` });
+router.put('/:id/edit', async (req, res) => {
+    const { id } = req.params;
+    const { name, modell, beschreibung, bettenzahl, fuehrerschein, preis_pro_tag } = req.body;
+
+    try {
+        const updateWohnmobil = await pool.query(
+            "UPDATE wohnmobile SET name = $1, modell = $2, beschreibung = $3, bettenzahl = $4, fuehrerschein = $5, preis_pro_tag = $6 WHERE id = $7 RETURNING *",
+            [name, modell, beschreibung, bettenzahl, fuehrerschein, preis_pro_tag, id]
+        );
+
+        if (updateWohnmobil.rows.length === 0) {
+            return res.status(404).json({ message: "Wohnmobil nicht gefunden" });
+        }
+
+        res.json(updateWohnmobil.rows[0]);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send("Server Fehler beim Aktualisieren des Wohnmobils");
+    }
 });
 
 // ENDPUNKT: DELETE /api/wohnmobile/:id - Löscht ein Wohnmobil.
 // ZUGRIFF: Nur für den Besitzer des Wohnmobils oder 'admin'.s
-router.delete('/:id', (req, res) => {
-    res.json({ message: `DELETE vehicle ${req.params.id} - to be implemented` });
+router.delete('/:id/delete', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const deleteWohnmobil = await pool.query("DELETE FROM wohnmobile WHERE id = $1 RETURNING *", [id]);
+        
+        if (deleteWohnmobil.rows.length === 0) {
+            return res.status(404).json({ message: "Wohnmobil nicht gefunden" });
+        }
+
+        res.json({ message: "Wohnmobil erfolgreich gelöscht" });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send("Server Fehler beim Löschen des Wohnmobils");
+    }
 });
 
 module.exports = router;
