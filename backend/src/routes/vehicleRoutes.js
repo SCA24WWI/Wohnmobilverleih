@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const pool = require('../config/database');
 
 // Controller wird später implementiert
 // const { getAllVehicles, getVehicleById, createVehicle, updateVehicle, deleteVehicle } = require('../controllers/vehicleController');
@@ -17,7 +18,7 @@ router.get('/', async (req, res) => {
 
 // ENDPUNKT: GET /api/wohnmobile/:id - Holt die Detailinformationen für ein einzelnes Wohnmobil.
 // INFO: Öffentlich zugänglich.
-rou.get('/:id', async (req, res) => {
+router.get('/:id', async (req, res) => {
     const id = req.params.id;
     try {
         const wohnmobil = await pool.query("SELECT * FROM wohnmobile WHERE id = $1", [id]);
@@ -33,7 +34,7 @@ rou.get('/:id', async (req, res) => {
 
 // ENDPUNKT: POST /api/wohnmobile - Erstellt ein neues Wohnmobil.
 // ZUGRIFF: Nur für 'anbieter' oder 'admin'..
-server.post('/create', async (req, res) => {
+router.post('/create', async (req, res) => {
     const { benutzer_id, name, modell, beschreibung, bettenzahl, fuehrerschein, preis_pro_tag, erstellt_am } = req.body;
 
     try {

@@ -1,6 +1,7 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const errorHandler = require('./middleware/errorHandler');
+const { errorHandler, notFound } = require('./middleware/errorHandler');
 
 // Route imports
 const vehicleRoutes = require('./routes/vehicleRoutes');
@@ -19,10 +20,11 @@ app.use('/api/vehicles', vehicleRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/users', userRoutes);
 
-// Error Handler
-app.use(errorHandler);
+// Error Handling Middleware
+app.use(notFound);    // Handle 404 errors
+app.use(errorHandler); // Handle all other errors
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
