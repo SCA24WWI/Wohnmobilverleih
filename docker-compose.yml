@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:16-alpine # Ein schlankes Postgres-Image
+    image: postgres:16-alpine
     restart: always
     environment:
       - POSTGRES_USER=app_user
@@ -10,7 +10,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
 
 volumes:
   postgres_data:
