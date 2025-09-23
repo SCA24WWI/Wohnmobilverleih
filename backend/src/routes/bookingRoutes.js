@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../config/database');
 
+// Controller wird später implementiert
+// const { getAllUsers, getUserById, updateUser } = require('../controllers/userController');
+
 // ENDPUNKT: GET /api/bookings - Alle Buchungen abrufen
 router.get('/', async (req, res) => {
     try {
