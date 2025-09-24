@@ -1,73 +1,67 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import { Button, Typography, Card } from "@material-tailwind/react";
+import Image from 'next/image';
+import { Button, Typography, Card } from '@material-tailwind/react';
 
 function Hero() {
-  return (
-    <div className="!flex h-[55vh] w-full items-center justify-between px-10">
-      <Image
-        width={1200}
-        height={1200}
-        src="/image/image8.svg"
-        alt="bg-img"
-        className="absolute inset-0 ml-auto w-[920px] h-[780px] rounded-bl-[100px] object-cover object-center"
-      />
-      <div className="container mx-auto mt-28">
-        <div className="grid grid-cols-12 text-center lg:text-left">
-          <Card className="col-span-full rounded-xl border border-white bg-white/90 py-10 p-8 shadow-lg shadow-black/10 backdrop-blur-sm backdrop-saturate-200 xl:col-span-7">
-            <Typography
-              variant="h1"
-              color="blue-gray"
-              className="lg:text-5xl !leading-snug text-3xl lg:max-w-3xl"
-            >
-              Unlock the Power of the Web with Our Expert Courses
-            </Typography>
-            <Typography variant="lead" className="mb-10 mt-6 !text-gray-900">
-              Are you ready to embark on an exciting journey into the world of
-              web development? Look no further! We are your trusted partner for
-              mastering the art of web development.
-            </Typography>
-            <div className="mb-8 flex justify-center gap-4 lg:justify-start">
-              <Button color="gray">view all courses</Button>
-              <Button color="gray" variant="outlined">
-                see pricing
-              </Button>
+    return (
+        <div className="relative h-screen w-full flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+            {/* Hintergrundbild als Overlay */}
+            <div className="absolute inset-0 opacity-10">
+                <Image
+                    width={1920}
+                    height={1080}
+                    src="/image/Background.png"
+                    alt="Wohnmobil"
+                    className="w-full h-full object-cover"
+                />
             </div>
-            <div className="grid grid-cols-2 lg:grid-cols-4 items-center justify-between gap-4 lg:justify-start">
-              <Image
-                width={144}
-                height={144}
-                className="w-36 grayscale opacity-60"
-                src="/logos/logo-pinterest.svg"
-                alt="pinterest"
-              />
-              <Image
-                width={144}
-                height={144}
-                className="w-36 grayscale opacity-60"
-                src="/logos/logo-netflix.svg"
-                alt="netflix"
-              />
-              <Image
-                width={144}
-                height={144}
-                className="w-36 grayscale opacity-60"
-                src="/logos/logo-coinbase.svg"
-                alt="coinbase"
-              />
-              <Image
-                width={144}
-                height={144}
-                className="w-36 grayscale opacity-60"
-                src="/logos/logo-google.svg"
-                alt="google"
-              />
+
+            {/* Hauptcontent zentriert */}
+            <div className="relative z-10 text-center max-w-4xl mx-auto px-6">
+                <Typography
+                    variant="h1"
+                    color="blue-gray"
+                    className="text-5xl lg:text-6xl xl:text-7xl font-light !leading-tight mb-8"
+                >
+                    Willkommen bei <span className="font-bold text-green-900">Wohnmobil Verleih</span>
+                </Typography>
+
+                <Typography
+                    variant="lead"
+                    color="gray"
+                    className="text-xl lg:text-2xl font-light mb-12 max-w-2xl mx-auto leading-relaxed"
+                >
+                    Entdecken Sie die Freiheit des Reisens. Unsere hochwertigen Wohnmobile bringen Sie zu
+                    unvergesslichen Abenteuern.
+                </Typography>
+
+                {/* CTA Buttons */}
+                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                    <Button
+                        variant="filled"
+                        size="lg"
+                        className="bg-green-900 hover:bg-green-800 px-8 py-4 text-base font-medium rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
+                    >
+                        Jetzt Wohnmobil buchen
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        size="lg"
+                        className="border-2 border-green-900 text-green-900 hover:bg-green-800 hover:text-white hover:border-green-800 px-8 py-4 text-base font-medium rounded-full transition-all duration-300"
+                    >
+                        Alle Fahrzeuge ansehen
+                    </Button>
+                </div>
             </div>
-          </Card>
+
+            {/* Scroll Indikator */}
+            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+                <div className="w-6 h-10 border-2 border-gray-400 rounded-full flex justify-center">
+                    <div className="w-1 h-3 bg-gray-400 rounded-full mt-2"></div>
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
-  );
+    );
 }
 export default Hero;

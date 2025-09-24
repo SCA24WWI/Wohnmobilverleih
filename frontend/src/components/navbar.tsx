@@ -1,27 +1,39 @@
 import React, { useState } from 'react';
-import { Navbar as MTNavbar, Collapse, Button, IconButton, Typography, Input } from '@material-tailwind/react';
 import {
-    RectangleStackIcon,
-    UserCircleIcon,
-    CommandLineIcon,
-    Squares2X2Icon,
+    Navbar as MTNavbar,
+    Collapse,
+    Button,
+    IconButton,
+    Typography,
+    Input,
+    Menu,
+    MenuHandler,
+    MenuList,
+    MenuItem
+} from '@material-tailwind/react';
+import {
+    TruckIcon,
+    InformationCircleIcon,
+    PhoneIcon,
     XMarkIcon,
     Bars3Icon,
-    MagnifyingGlassIcon
+    MagnifyingGlassIcon,
+    UserCircleIcon,
+    ChevronDownIcon
 } from '@heroicons/react/24/solid';
 
 const NAV_MENU = [
     {
         name: 'Wohnmobile',
-        icon: RectangleStackIcon
+        icon: TruckIcon
     },
     {
         name: 'Über uns',
-        icon: UserCircleIcon
+        icon: InformationCircleIcon
     },
     {
         name: 'Kontakt',
-        icon: CommandLineIcon
+        icon: PhoneIcon
     }
 ];
 
@@ -38,8 +50,8 @@ function NavItem({ children, href }: NavItemProps) {
                 href={href || '#'}
                 target={href ? '_blank' : '_self'}
                 variant="paragraph"
-                color="gray"
-                className="flex items-center gap-2 font-medium text-gray-900"
+                color="white"
+                className="flex items-center gap-2 font-medium hover:text-gray-200 transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-white/10"
             >
                 {children}
             </Typography>
@@ -51,35 +63,42 @@ export function Navbar() {
     const [open, setOpen] = React.useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-    // Ersetze deine bisherige authLink-Definition hiermit:
-    let authLink;
-
-    if (isLoggedIn) {
-        authLink = (
-            <>
-                <a href="/bookings">
-                    <Button variant="text">Meine Buchungen</Button>
-                </a>
-                <a href="/profile">
-                    <Button variant="text">Mein Profil</Button>
-                </a>
-                <Button color="gray" onClick={() => setIsLoggedIn(false)}>
-                    Abmelden
+    const authMenu = (
+        <Menu>
+            <MenuHandler>
+                <Button variant="text" color="white" className="flex items-center gap-2 p-2">
+                    <UserCircleIcon className="h-7 w-7" />
+                    <ChevronDownIcon className="h-4 w-4" />
                 </Button>
-            </>
-        );
-    } else {
-        authLink = (
-            <>
-                <a href="/register">
-                    <Button variant="text">Registrieren</Button>
-                </a>
-                <Button color="gray" onClick={() => setIsLoggedIn(true)}>
-                    Anmelden
-                </Button>
-            </>
-        );
-    }
+            </MenuHandler>
+            <MenuList>
+                {isLoggedIn ? (
+                    <>
+                        <MenuItem>
+                            <a href="/bookings" className="w-full">
+                                Meine Buchungen
+                            </a>
+                        </MenuItem>
+                        <MenuItem>
+                            <a href="/profile" className="w-full">
+                                Mein Profil
+                            </a>
+                        </MenuItem>
+                        <MenuItem onClick={() => setIsLoggedIn(false)}>Abmelden</MenuItem>
+                    </>
+                ) : (
+                    <>
+                        <MenuItem>
+                            <a href="/register" className="w-full">
+                                Registrieren
+                            </a>
+                        </MenuItem>
+                        <MenuItem onClick={() => setIsLoggedIn(true)}>Anmelden</MenuItem>
+                    </>
+                )}
+            </MenuList>
+        </Menu>
+    );
 
     function handleOpen() {
         setOpen((cur) => !cur);
@@ -90,11 +109,11 @@ export function Navbar() {
     }, []);
 
     return (
-        <div className="px-10 sticky top-4 z-50">
+        <div className="px-10 top-4 z-50">
             <div className="mx-auto container">
-                <MTNavbar blurred color="white" className="z-50 mt-6 relative border-0 pr-3 py-3 pl-6 bg-[#3d9948]">
+                <MTNavbar className="z-50 mt-6 relative border-0 shadow-lg bg-green-900 !bg-opacity-100">
                     <div className="flex items-center justify-between">
-                        <Typography color="blue-gray" className="text-lg font-bold">
+                        <Typography variant="h5" color="white" className="font-bold">
                             Wohnmobil Verleih
                         </Typography>
 
@@ -106,10 +125,11 @@ export function Navbar() {
                                 </NavItem>
                             ))}
                         </ul>
-                        <div className="hidden items-center gap-4 lg:flex">{authLink}</div>
+                        <div className="hidden items-center gap-4 lg:flex">{authMenu}</div>
                         <IconButton
                             variant="text"
-                            color="gray"
+                            color="white"
+                            size="lg"
                             onClick={handleOpen}
                             className="ml-auto inline-block lg:hidden"
                         >
@@ -130,7 +150,7 @@ export function Navbar() {
                                     </NavItem>
                                 ))}
                             </ul>
-                            <div className="mt-6 mb-4 flex items-center gap-4">{authLink}</div>
+                            <div className="mt-6 mb-4 flex items-center gap-4">{authMenu}</div>
                         </div>
                     </Collapse>
                 </MTNavbar>
