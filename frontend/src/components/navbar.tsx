@@ -49,9 +49,8 @@ function NavItem({ children, href }: NavItemProps) {
                 as="a"
                 href={href || '#'}
                 target={href ? '_blank' : '_self'}
-                variant="paragraph"
-                color="white"
-                className="flex items-center gap-2 font-medium hover:text-gray-200 transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-white/10"
+                variant="lead"
+                className="flex items-center gap-3 font-bold hover:text-gray-200 transition-colors duration-200 px-4 py-3 rounded-lg hover:bg-white/10 text-white text-lg drop-shadow-md"
             >
                 {children}
             </Typography>
@@ -66,9 +65,9 @@ export function Navbar() {
     const authMenu = (
         <Menu>
             <MenuHandler>
-                <Button variant="text" color="white" className="flex items-center gap-2 p-2">
-                    <UserCircleIcon className="h-7 w-7" />
-                    <ChevronDownIcon className="h-4 w-4" />
+                <Button variant="text" className="flex items-center gap-2 p-2 text-white">
+                    <UserCircleIcon className="h-10 w-10 drop-shadow-md" />
+                    <ChevronDownIcon className="h-8 w-8 drop-shadow-md" />
                 </Button>
             </MenuHandler>
             <MenuList>
@@ -109,15 +108,43 @@ export function Navbar() {
     }, []);
 
     return (
-        <div className="px-10 top-4 z-50">
-            <div className="mx-auto container">
-                <MTNavbar className="z-50 mt-6 relative border-0 shadow-lg bg-green-900 !bg-opacity-100">
-                    <div className="flex items-center justify-between">
-                        <Typography variant="h5" color="white" className="font-bold">
-                            Wohnmobil Verleih
-                        </Typography>
+        <div className="absolute top-0 left-0 right-0 px-10 z-50">
+            <div className="max-w-full">
+                <div className="flex items-center justify-between">
+                    <Typography variant="h4" className="font-bold text-white text-2xl lg:text-3xl drop-shadow-lg">
+                        Wohnmobil Verleih
+                    </Typography>
 
-                        <ul className="ml-4 hidden items-center gap-6 lg:flex">
+                    {/* Absolut zentrierte NavMenu */}
+                    <div className="absolute left-1/2 transform -translate-x-1/2 hidden lg:block">
+                        <ul className="flex items-center gap-8">
+                            {NAV_MENU.map(({ name, icon: Icon }) => (
+                                <NavItem key={name}>
+                                    <Icon className="h-6 w-6 drop-shadow-md" />
+                                    {name}
+                                </NavItem>
+                            ))}
+                        </ul>
+                    </div>
+
+                    <div className="hidden items-center gap-4 lg:flex">{authMenu}</div>
+                    <IconButton
+                        variant="text"
+                        color="white"
+                        size="lg"
+                        onClick={handleOpen}
+                        className="ml-auto inline-block lg:hidden text-white drop-shadow-md"
+                    >
+                        {open ? (
+                            <XMarkIcon strokeWidth={2} className="h-6 w-6 drop-shadow-md" />
+                        ) : (
+                            <Bars3Icon strokeWidth={2} className="h-6 w-6 drop-shadow-md" />
+                        )}
+                    </IconButton>
+                </div>
+                <Collapse open={open}>
+                    <div className="container mx-auto mt-3 border-t border-gray-200 px-2 pt-4">
+                        <ul className="flex flex-col gap-4">
                             {NAV_MENU.map(({ name, icon: Icon }) => (
                                 <NavItem key={name}>
                                     <Icon className="h-5 w-5" />
@@ -125,35 +152,9 @@ export function Navbar() {
                                 </NavItem>
                             ))}
                         </ul>
-                        <div className="hidden items-center gap-4 lg:flex">{authMenu}</div>
-                        <IconButton
-                            variant="text"
-                            color="white"
-                            size="lg"
-                            onClick={handleOpen}
-                            className="ml-auto inline-block lg:hidden"
-                        >
-                            {open ? (
-                                <XMarkIcon strokeWidth={2} className="h-6 w-6" />
-                            ) : (
-                                <Bars3Icon strokeWidth={2} className="h-6 w-6" />
-                            )}
-                        </IconButton>
+                        <div className="mt-6 mb-4 flex items-center gap-4">{authMenu}</div>
                     </div>
-                    <Collapse open={open}>
-                        <div className="container mx-auto mt-3 border-t border-gray-200 px-2 pt-4">
-                            <ul className="flex flex-col gap-4">
-                                {NAV_MENU.map(({ name, icon: Icon }) => (
-                                    <NavItem key={name}>
-                                        <Icon className="h-5 w-5" />
-                                        {name}
-                                    </NavItem>
-                                ))}
-                            </ul>
-                            <div className="mt-6 mb-4 flex items-center gap-4">{authMenu}</div>
-                        </div>
-                    </Collapse>
-                </MTNavbar>
+                </Collapse>
             </div>
         </div>
     );
