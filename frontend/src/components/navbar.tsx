@@ -112,7 +112,8 @@ export function Navbar() {
             <div className="max-w-full">
                 <div className="flex items-center justify-between">
                     <Typography variant="h4" className="font-bold text-white text-2xl lg:text-3xl drop-shadow-lg">
-                        Wohnmobil Verleih
+                        Wohnmobil
+                        <br /> Verleih
                     </Typography>
 
                     {/* Absolut zentrierte NavMenu */}

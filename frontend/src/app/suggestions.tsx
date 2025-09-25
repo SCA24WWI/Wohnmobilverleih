@@ -7,27 +7,27 @@ import SuggestionCard from '@/components/suggestion-card';
 const EVENTS = [
     {
         img: '/image/blogs/blog-1.svg',
-        title: 'Future of Web Development: Trends and Innovations',
-        desc: 'Discover the latest trends and innovations shaping the future of web development.',
-        buttonLabel: 'register for free'
+        title: 'Camper für Familien',
+        desc: 'Entdecken Sie die besten Wohnmobile für Familienurlaube.',
+        buttonLabel: 'Jetzt buchen'
     },
     {
         img: '/image/blogs/blog2.svg',
-        title: 'WebDev Pro Code-a-Thon: Build a Responsive Website',
-        desc: 'Participants will have 48 hours to create a responsive website from scratch using HTML, CSS, and JavaScript.',
-        buttonLabel: 'register for free'
+        title: 'Camper mit Haustiererlaubnis',
+        desc: 'Entdecken Sie die besten Wohnmobile, die Haustiere erlauben.',
+        buttonLabel: 'Jetzt buchen'
     },
     {
         img: '/image/blogs/blog3.svg',
-        title: 'Ask the Experts: Frontend Web Development',
-        desc: 'Join our live Q&A session with our experienced instructors. Get answers to your queries, insights into best practices.',
-        buttonLabel: 'get ticket'
+        title: 'kleine Camper für Paare',
+        desc: 'Entdecken Sie die besten kleinen Camper für romantische Ausflüge zu zweit.',
+        buttonLabel: 'Jetzt buchen'
     },
     {
         img: '/image/blogs/blog4.svg',
-        title: 'Web Accessibility: Building Inclusive Websites',
-        desc: 'Industry experts will discuss the importance of inclusive design and share strategies for creating websites.',
-        buttonLabel: 'get ticket'
+        title: 'günstige Camper für jedes Budget',
+        desc: 'Entdecken Sie die besten Wohnmobile zu erschwinglichen Preisen.',
+        buttonLabel: 'Jetzt buchen'
     }
 ];
 
