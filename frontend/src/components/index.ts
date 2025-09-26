@@ -8,4 +8,6 @@ export * from './feedback-card';
 export * from './category-card';
 export * from './course-card';
 export * from './suggestion-card';
+export * from './quickbook-search-bar';
+export * from './vehicle-card';
 export * from './footer';

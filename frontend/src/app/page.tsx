@@ -10,6 +10,7 @@ import Testimonial from './testimonial';
 import Suggestions from './suggestions';
 import StudentsFeedback from './students-feedback';
 import TrustedCompany from './trusted-companies';
+import { Quickbook } from './quickbook';
 
 export default function Campaign() {
     return (
@@ -17,6 +18,7 @@ export default function Campaign() {
             <Navbar />
             <Hero />
             <Suggestions />
+            <Quickbook />
             <OutImpressiveStats />
             <CoursesCategories />
             <ExploreCourses />
