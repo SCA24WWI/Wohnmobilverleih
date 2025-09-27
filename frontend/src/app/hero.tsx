@@ -5,14 +5,14 @@ import { Button, Typography, Card } from '@material-tailwind/react';
 
 function Hero() {
     return (
-        <div className="relative h-screen w-full flex items-center justify-center -mt-16 lg:-mt-20">
+        <div className="relative w-full flex items-center justify-center overflow-hidden" style={{ height: '100vh' }}>
             {/* Hintergrundbild */}
-            <div className="absolute inset-0 w-full h-full">
+            <div className="absolute inset-0 w-full h-full -top-16 lg:-top-20" style={{ height: 'calc(100vh + 5rem)' }}>
                 <Image
                     fill
                     src="/image/Background.png"
                     alt="Wohnmobil"
-                    className="object-cover object-center"
+                    className="object-cover object-center w-full h-full"
                     sizes="100vw"
                     priority
                 />

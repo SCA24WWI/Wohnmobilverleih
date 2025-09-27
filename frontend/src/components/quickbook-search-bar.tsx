@@ -80,7 +80,13 @@ export function QuickbookSearchBar({ onSearch }: QuickbookSearchBarProps) {
                     </div>
 
                     {/* Search Form */}
-                    <form className="flex flex-col xl:flex-row items-stretch xl:items-center gap-3 xl:gap-4">
+                    <form
+                        className="flex flex-col xl:flex-row items-stretch xl:items-center gap-3 xl:gap-4"
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            onSearch(formData);
+                        }}
+                    >
                         {/* Standort Eingabe */}
                         <div className="flex-1">
                             <div className="relative">
@@ -163,10 +169,7 @@ export function QuickbookSearchBar({ onSearch }: QuickbookSearchBarProps) {
                         {/* Suchen Button */}
                         <div className="xl:flex-initial xl:min-w-[160px]">
                             <Button
-                                onClick={(e: React.FormEvent) => {
-                                    e.preventDefault();
-                                    onSearch(formData);
-                                }}
+                                type="submit"
                                 size="lg"
                                 className="w-full xl:w-auto bg-green-800 hover:bg-green-600 transition-colors duration-200 h-12 px-8 flex items-center justify-center gap-2 normal-case text-base font-semibold"
                             >

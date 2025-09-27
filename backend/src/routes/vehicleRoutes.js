@@ -8,7 +8,11 @@ const pool = require('../config/database');
 // ENDPUNKT: Wohnmobile suchen mit Filtern
 router.get('/search', async (req, res) => {
     try {
-        const { location, guests, dateFrom, dateTo } = req.query;
+        const { location, guests, dateFrom, dateTo, page = 1, limit = 6 } = req.query;
+
+        const pageNumber = parseInt(page) || 1;
+        const limitNumber = parseInt(limit) || 6;
+        const offset = (pageNumber - 1) * limitNumber;
 
         if (dateFrom && dateTo) {
             const fromDate = new Date(dateFrom);
@@ -20,7 +24,25 @@ router.get('/search', async (req, res) => {
             }
         }
 
-        const sqlQuery = `
+        const countQuery = `
+            SELECT COUNT(DISTINCT w.id) as total
+            FROM wohnmobile w
+            LEFT JOIN buchungen b ON w.id = b.wohnmobil_id
+                AND b.status IN ('bestätigt', 'angefragt')
+                AND b.end_datum > $3::DATE
+                AND b.start_datum < $4::DATE
+            WHERE
+                (w.bettenzahl >= $1 OR $1 IS NULL)
+            AND
+                (
+                    LOWER(w.ort) LIKE LOWER($2) OR
+                    $2 = '%%'
+                )
+            AND
+                ( ($3 IS NULL OR $4 IS NULL) OR b.id IS NULL )
+        `;
+
+        const dataQuery = `
             SELECT DISTINCT w.*
             FROM wohnmobile w
             LEFT JOIN buchungen b ON w.id = b.wohnmobil_id
@@ -31,18 +53,15 @@ router.get('/search', async (req, res) => {
                 (w.bettenzahl >= $1 OR $1 IS NULL)
             AND
                 (
-                    LOWER(w.name) LIKE LOWER($2) OR 
-                    LOWER(w.modell) LIKE LOWER($2) OR 
                     LOWER(w.ort) LIKE LOWER($2) OR
                     $2 = '%%'
                 )
             AND
                 ( ($3 IS NULL OR $4 IS NULL) OR b.id IS NULL )
-            ORDER BY w.preis_pro_tag ASC;
+            ORDER BY w.preis_pro_tag ASC
+            LIMIT $5 OFFSET $6
         `;
 
-        // Die Parameter müssen jetzt immer in der exakt gleichen Reihenfolge übergeben werden,
-        // auch wenn sie leer sind (dann als NULL oder '%%').
         const queryParams = [
             parseInt(guests) || null,
             location ? `%${location.trim()}%` : '%%',
@@ -50,11 +69,24 @@ router.get('/search', async (req, res) => {
             dateTo || null
         ];
 
-        console.log('Static SQL Query:', sqlQuery);
-        console.log('Parameters:', queryParams);
+        const countResult = await pool.query(countQuery, queryParams);
+        const totalVehicles = parseInt(countResult.rows[0].total);
+        const totalPages = Math.ceil(totalVehicles / limitNumber);
 
-        const { rows } = await pool.query(sqlQuery, queryParams);
-        res.status(200).json(rows);
+        const dataQueryParams = [...queryParams, limitNumber, offset];
+        const dataResult = await pool.query(dataQuery, dataQueryParams);
+
+        res.status(200).json({
+            vehicles: dataResult.rows,
+            pagination: {
+                currentPage: pageNumber,
+                totalPages,
+                totalVehicles,
+                vehiclesPerPage: limitNumber,
+                hasNextPage: pageNumber < totalPages,
+                hasPreviousPage: pageNumber > 1
+            }
+        });
     } catch (err) {
         console.error('Fehler bei der Wohnmobilsuche:', err.message);
         res.status(500).send('Serverfehler beim Abrufen der Wohnmobile');
