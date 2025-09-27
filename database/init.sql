@@ -61,7 +61,6 @@ VALUES
 
 INSERT INTO
     wohnmobile (
-        benutzer_id,
         name,
         modell,
         bettenzahl,
@@ -71,7 +70,6 @@ INSERT INTO
     )
 VALUES
     (
-        1,
         'Knaus Sky Traveller',
         'Teilintegriert',
         4,
@@ -80,7 +78,6 @@ VALUES
         110.00
     ),
     (
-        1,
         'Bürstner Lyseo',
         'Alkoven',
         5,
@@ -89,7 +86,6 @@ VALUES
         135.50
     ),
     (
-        1,
         'Hymer B-Klasse SL',
         'Vollintegriert',
         4,
@@ -98,7 +94,6 @@ VALUES
         145.00
     ),
     (
-        1,
         'Weinsberg CaraCore',
         'Kastenwagen',
         2,
@@ -107,7 +102,6 @@ VALUES
         85.00
     ),
     (
-        1,
         'Dethleffs Trend',
         'Teilintegriert',
         6,
@@ -116,7 +110,6 @@ VALUES
         125.00
     ),
     (
-        1,
         'Adria Coral Axess',
         'Vollintegriert',
         5,
@@ -125,7 +118,6 @@ VALUES
         155.00
     ),
     (
-        1,
         'Pössl Roadcamp',
         'Kastenwagen',
         2,
@@ -134,7 +126,6 @@ VALUES
         95.00
     ),
     (
-        1,
         'Carthago Chic S-Plus',
         'Vollintegriert',
         4,
@@ -143,7 +134,6 @@ VALUES
         165.00
     ),
     (
-        1,
         'Laika Ecovip',
         'Teilintegriert',
         3,
@@ -152,7 +142,6 @@ VALUES
         115.00
     ),
     (
-        1,
         'Hobby Optima Deluxe',
         'Alkoven',
         6,
@@ -161,7 +150,6 @@ VALUES
         140.00
     ),
     (
-        1,
         'Malibu Van Charming',
         'Kastenwagen',
         2,
@@ -170,7 +158,6 @@ VALUES
         88.00
     ),
     (
-        1,
         'Roller Team Zefiro',
         'Teilintegriert',
         4,
@@ -179,7 +166,6 @@ VALUES
         120.00
     ),
     (
-        1,
         'Sunlight Cliff Adventure',
         'Alkoven',
         7,
