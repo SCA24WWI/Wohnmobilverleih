@@ -31,7 +31,7 @@ async function fetchVehicles(filters?: SearchFilters): Promise<Vehicle[]> {
             name: vehicle.name || 'Unbekanntes Fahrzeug',
             type: vehicle.modell || 'Unbekannt',
             guests: vehicle.bettenzahl || 2,
-            location: 'Deutschland', // Da keine Location in API-Response, setze default
+            location: vehicle.ort || 'Unbekannt',
             pricePerDay: parseFloat(vehicle.preis_pro_tag) || 0,
             image: `/image/books/RectangleBig${(index % 7) + 1}.svg`, // Verwende vorhandene Bilder rotierend
             features: getFeaturesByModel(vehicle.modell || '', vehicle.bettenzahl || 2), // Generiere Features basierend auf Modell

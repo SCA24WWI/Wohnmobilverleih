@@ -14,12 +14,12 @@ CREATE TABLE
 CREATE TABLE
     IF NOT EXISTS wohnmobile (
         id SERIAL PRIMARY KEY,
-        benutzer_id INTEGER NOT NULL REFERENCES benutzer (id) ON DELETE CASCADE,
         name VARCHAR(100) NOT NULL,
         modell VARCHAR(100),
         beschreibung TEXT,
         bettenzahl INTEGER NOT NULL,
         fuehrerschein VARCHAR(10) NOT NULL,
+        ort VARCHAR(100),
         preis_pro_tag NUMERIC(8, 2) NOT NULL,
         erstellt_am TIMESTAMP
         WITH
@@ -66,6 +66,7 @@ INSERT INTO
         modell,
         bettenzahl,
         fuehrerschein,
+        ort,
         preis_pro_tag
     )
 VALUES
@@ -75,15 +76,25 @@ VALUES
         'Teilintegriert',
         4,
         'B',
+        'München',
         110.00
     ),
-    (1, 'Bürstner Lyseo', 'Alkoven', 5, 'C1', 135.50),
+    (
+        1,
+        'Bürstner Lyseo',
+        'Alkoven',
+        5,
+        'C1',
+        'Berlin',
+        135.50
+    ),
     (
         1,
         'Hymer B-Klasse SL',
         'Vollintegriert',
         4,
         'C1',
+        'Hamburg',
         145.00
     ),
     (
@@ -92,6 +103,7 @@ VALUES
         'Kastenwagen',
         2,
         'B',
+        'Köln',
         85.00
     ),
     (
@@ -100,6 +112,7 @@ VALUES
         'Teilintegriert',
         6,
         'C1',
+        'Frankfurt',
         125.00
     ),
     (
@@ -108,15 +121,25 @@ VALUES
         'Vollintegriert',
         5,
         'C1',
+        'Stuttgart',
         155.00
     ),
-    (1, 'Pössl Roadcamp', 'Kastenwagen', 2, 'B', 95.00),
+    (
+        1,
+        'Pössl Roadcamp',
+        'Kastenwagen',
+        2,
+        'B',
+        'Dresden',
+        95.00
+    ),
     (
         1,
         'Carthago Chic S-Plus',
         'Vollintegriert',
         4,
         'C1',
+        'Düsseldorf',
         165.00
     ),
     (
@@ -125,6 +148,7 @@ VALUES
         'Teilintegriert',
         3,
         'B',
+        'Leipzig',
         115.00
     ),
     (
@@ -133,6 +157,7 @@ VALUES
         'Alkoven',
         6,
         'C1',
+        'Nürnberg',
         140.00
     ),
     (
@@ -141,6 +166,7 @@ VALUES
         'Kastenwagen',
         2,
         'B',
+        'Bremen',
         88.00
     ),
     (
@@ -149,6 +175,7 @@ VALUES
         'Teilintegriert',
         4,
         'C1',
+        'Hannover',
         120.00
     ),
     (
@@ -157,5 +184,6 @@ VALUES
         'Alkoven',
         7,
         'C1',
+        'Dortmund',
         150.00
     );

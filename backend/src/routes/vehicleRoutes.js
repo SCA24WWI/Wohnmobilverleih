@@ -10,52 +10,54 @@ router.get('/search', async (req, res) => {
     try {
         const { location, guests, dateFrom, dateTo } = req.query;
 
-        // Basis-SQL-Query
-        let query = 'SELECT * FROM wohnmobile WHERE 1=1';
-        let queryParams = [];
-        let paramCount = 0;
-
-        // Filter nach Gästeanzahl (Mindestanzahl Betten)
-        if (guests && !isNaN(guests) && parseInt(guests) > 0) {
-            paramCount++;
-            query += ` AND bettenzahl >= $${paramCount}`;
-            queryParams.push(parseInt(guests));
-        }
-
-        // Filter nach Standort (sucht in name, modell)
-        if (location && location.trim() !== '') {
-            paramCount++;
-            query += ` AND (LOWER(name) LIKE LOWER($${paramCount}) OR LOWER(modell) LIKE LOWER($${paramCount}))`;
-            queryParams.push(`%${location.trim()}%`);
-        }
-
-        // Datum-Filter: Hier könnten wir später Buchungskonflikte prüfen
-        // Für jetzt validieren wir nur die Datumslogik
         if (dateFrom && dateTo) {
             const fromDate = new Date(dateFrom);
             const toDate = new Date(dateTo);
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-
-            // Validierung: Startdatum muss vor Enddatum liegen und in der Zukunft
-            if (fromDate >= toDate || fromDate < today) {
+            if (fromDate >= toDate) {
                 return res.status(400).json({
-                    error: 'Ungültige Datumswerte. Startdatum muss vor Enddatum liegen und in der Zukunft sein.'
+                    error: 'Das Startdatum muss vor dem Enddatum liegen.'
                 });
             }
-
-            // Hier könnte später eine Buchungskonflikt-Prüfung stehen:
-            // query += ` AND id NOT IN (SELECT wohnmobil_id FROM buchungen WHERE ...)`
         }
 
-        console.log('SQL Query:', query);
+        const sqlQuery = `
+            SELECT DISTINCT w.*
+            FROM wohnmobile w
+            LEFT JOIN buchungen b ON w.id = b.wohnmobil_id
+                AND b.status IN ('bestätigt', 'angefragt')
+                AND b.end_datum > $3::DATE
+                AND b.start_datum < $4::DATE
+            WHERE
+                (w.bettenzahl >= $1 OR $1 IS NULL)
+            AND
+                (
+                    LOWER(w.name) LIKE LOWER($2) OR 
+                    LOWER(w.modell) LIKE LOWER($2) OR 
+                    LOWER(w.ort) LIKE LOWER($2) OR
+                    $2 = '%%'
+                )
+            AND
+                ( ($3 IS NULL OR $4 IS NULL) OR b.id IS NULL )
+            ORDER BY w.preis_pro_tag ASC;
+        `;
+
+        // Die Parameter müssen jetzt immer in der exakt gleichen Reihenfolge übergeben werden,
+        // auch wenn sie leer sind (dann als NULL oder '%%').
+        const queryParams = [
+            parseInt(guests) || null,
+            location ? `%${location.trim()}%` : '%%',
+            dateFrom || null,
+            dateTo || null
+        ];
+
+        console.log('Static SQL Query:', sqlQuery);
         console.log('Parameters:', queryParams);
 
-        const alleWohnmobile = await pool.query(query, queryParams);
-        res.status(200).json(alleWohnmobile.rows);
+        const { rows } = await pool.query(sqlQuery, queryParams);
+        res.status(200).json(rows);
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Fehler beim Abrufen der Wohnmobile');
+        console.error('Fehler bei der Wohnmobilsuche:', err.message);
+        res.status(500).send('Serverfehler beim Abrufen der Wohnmobile');
     }
 });
 
