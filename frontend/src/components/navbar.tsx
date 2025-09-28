@@ -25,15 +25,18 @@ import {
 const NAV_MENU = [
     {
         name: 'Wohnmobile',
-        icon: TruckIcon
+        icon: TruckIcon,
+        href: '/wohnmobile'
     },
     {
         name: 'Über uns',
-        icon: InformationCircleIcon
+        icon: InformationCircleIcon,
+        href: '/ueber-uns'
     },
     {
         name: 'Kontakt',
-        icon: PhoneIcon
+        icon: PhoneIcon,
+        href: '/kontakt'
     }
 ];
 
@@ -48,7 +51,7 @@ function NavItem({ children, href }: NavItemProps) {
             <Typography
                 as="a"
                 href={href || '#'}
-                target={href ? '_blank' : '_self'}
+                target="_self"
                 variant="lead"
                 className="flex items-center gap-3 font-bold hover:text-gray-200 transition-colors duration-200 px-4 py-3 rounded-lg hover:bg-white/10 text-white text-lg drop-shadow-md"
             >
@@ -88,11 +91,15 @@ export function Navbar() {
                 ) : (
                     <>
                         <MenuItem>
-                            <a href="/register" className="w-full">
+                            <a href="/registrieren" className="w-full">
                                 Registrieren
                             </a>
                         </MenuItem>
-                        <MenuItem onClick={() => setIsLoggedIn(true)}>Anmelden</MenuItem>
+                        <MenuItem>
+                            <a href="/anmelden" className="w-full">
+                                Anmelden
+                            </a>
+                        </MenuItem>
                     </>
                 )}
             </MenuList>
@@ -111,7 +118,12 @@ export function Navbar() {
         <div className="absolute top-0 left-0 right-0 px-10 z-50">
             <div className="max-w-full">
                 <div className="flex items-center justify-between">
-                    <Typography variant="h4" className="font-bold text-white text-2xl lg:text-3xl drop-shadow-lg">
+                    <Typography 
+                        as="a"
+                        href="/"
+                        variant="h4" 
+                        className="font-bold text-white text-2xl lg:text-3xl drop-shadow-lg cursor-pointer hover:opacity-80 transition-opacity duration-300"
+                    >
                         Wohnmobil
                         <br /> Verleih
                     </Typography>
@@ -119,8 +131,8 @@ export function Navbar() {
                     {/* Absolut zentrierte NavMenu */}
                     <div className="absolute left-1/2 transform -translate-x-1/2 hidden lg:block">
                         <ul className="flex items-center gap-8">
-                            {NAV_MENU.map(({ name, icon: Icon }) => (
-                                <NavItem key={name}>
+                            {NAV_MENU.map(({ name, icon: Icon, href }) => (
+                                <NavItem key={name} href={href}>
                                     <Icon className="h-6 w-6 drop-shadow-md" />
                                     {name}
                                 </NavItem>
@@ -146,8 +158,8 @@ export function Navbar() {
                 <Collapse open={open}>
                     <div className="container mx-auto mt-3 border-t border-gray-200 px-2 pt-4">
                         <ul className="flex flex-col gap-4">
-                            {NAV_MENU.map(({ name, icon: Icon }) => (
-                                <NavItem key={name}>
+                            {NAV_MENU.map(({ name, icon: Icon, href }) => (
+                                <NavItem key={name} href={href}>
                                     <Icon className="h-5 w-5" />
                                     {name}
                                 </NavItem>
