@@ -2,6 +2,7 @@ import './globals.css';
 import type { Metadata } from 'next';
 import { Roboto } from 'next/font/google';
 import { Layout } from '@/components';
+import { AuthProvider } from '@/contexts/AuthContext';
 
 const roboto = Roboto({
     subsets: ['latin'],
@@ -23,7 +24,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <link rel="shortcut icon" href="/favicon.png" type="image/png" />
             </head>
             <body className={roboto.className}>
-                <Layout>{children}</Layout>
+                <AuthProvider>
+                    <Layout>{children}</Layout>
+                </AuthProvider>
             </body>
         </html>
     );

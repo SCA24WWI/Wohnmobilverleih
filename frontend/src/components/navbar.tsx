@@ -1,4 +1,7 @@
+'use client';
+
 import React, { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import {
     Navbar as MTNavbar,
     Collapse,
@@ -70,7 +73,7 @@ function NavItem({ children, href, transparent = false }: NavItemProps) {
 
 export function Navbar({ transparent = false }: NavbarProps) {
     const [open, setOpen] = React.useState(false);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const { user, logout } = useAuth();
 
     const authMenu = (
         <Menu>
@@ -81,8 +84,11 @@ export function Navbar({ transparent = false }: NavbarProps) {
                 </Button>
             </MenuHandler>
             <MenuList>
-                {isLoggedIn ? (
+                {user ? (
                     <>
+                        <MenuItem>
+                            <div className="px-2 py-1 text-sm text-gray-600">Hallo, {user.vorname}!</div>
+                        </MenuItem>
                         <MenuItem>
                             <a href="/bookings" className="w-full">
                                 Meine Buchungen
@@ -93,17 +99,17 @@ export function Navbar({ transparent = false }: NavbarProps) {
                                 Mein Profil
                             </a>
                         </MenuItem>
-                        <MenuItem onClick={() => setIsLoggedIn(false)}>Abmelden</MenuItem>
+                        <MenuItem onClick={logout}>Abmelden</MenuItem>
                     </>
                 ) : (
                     <>
                         <MenuItem>
-                            <a href="/registrieren" className="w-full">
+                            <a href="/auth" className="w-full">
                                 Registrieren
                             </a>
                         </MenuItem>
                         <MenuItem>
-                            <a href="/anmelden" className="w-full">
+                            <a href="/auth" className="w-full">
                                 Anmelden
                             </a>
                         </MenuItem>

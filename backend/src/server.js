@@ -9,6 +9,7 @@ const { errorHandler, notFound } = require('./middleware/errorHandler');
 const vehicleRoutes = require('./routes/vehicleRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
 const userRoutes = require('./routes/userRoutes');
+const authRoutes = require('./routes/authRoutes');
 
 const app = express();
 
@@ -21,9 +22,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/vehicles', vehicleRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/auth', authRoutes);
 
 // Error Handling Middleware
-app.use(notFound);    // Handle 404 errors
+app.use(notFound); // Handle 404 errors
 app.use(errorHandler); // Handle all other errors
 
 const PORT = process.env.PORT || 3000;
