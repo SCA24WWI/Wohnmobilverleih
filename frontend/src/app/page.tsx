@@ -4,7 +4,6 @@ import { Navbar, Footer } from '@/components';
 // sections
 import Hero from './hero';
 import Suggestions from './suggestions';
-import Quickbook from './quickbook';
 
 export default function Campaign() {
     return (
@@ -12,7 +11,6 @@ export default function Campaign() {
             <Navbar transparent={true} />
             <Hero />
             <Suggestions />
-            <Quickbook />
             <Footer />
         </>
     );

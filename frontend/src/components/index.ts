@@ -4,5 +4,5 @@ export * from './navbar';
 export * from './footer';
 export * from './layout';
 export * from './suggestion-card';
-export * from './quickbook-search-bar';
+export * from './search-bar';
 export * from './vehicle-quickbook-card';

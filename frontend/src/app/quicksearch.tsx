@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Typography } from '@material-tailwind/react';
-import { QuickbookSearchBar, VehicleCard } from '@/components';
+import { SearchBar, VehicleCard } from '@/components';
 import { API_CONFIG, buildApiUrl } from '@/config/api';
 
 async function fetchVehicles(filters?: SearchFilters, page: number = 1): Promise<VehicleSearchResponse> {
@@ -85,12 +85,30 @@ interface Vehicle {
     beschreibung?: string;
 }
 
+// Basic search data for simple search (wird für Kompatibilität benötigt)
 interface SearchFilters {
     location: string;
     dateFrom: string;
     dateTo: string;
     guests: number;
 }
+
+// Extended search data for detailed vehicle search (neu hinzugefügt)
+interface ExtendedSearchFilters extends SearchFilters {
+    pets?: boolean;
+    kitchen?: boolean;
+    wifi?: boolean;
+    bathroom?: boolean;
+    airConditioning?: boolean;
+    transmission?: 'automatic' | 'manual' | '';
+    priceRange?: {
+        min: number;
+        max: number;
+    };
+}
+
+// Union type für beide Filter-Typen
+type AllSearchFilters = SearchFilters | ExtendedSearchFilters;
 
 interface PaginationInfo {
     currentPage: number;
@@ -106,14 +124,18 @@ interface VehicleSearchResponse {
     pagination: PaginationInfo;
 }
 
-export function Quickbook() {
+interface QuickbookProps {
+    quickbook?: boolean;
+}
+
+export function Quickbook({ quickbook = true }: QuickbookProps) {
     const [vehicleData, setVehicleData] = useState<VehicleSearchResponse | null>(null);
     const [isSearching, setIsSearching] = useState(false);
     const [hasSearched, setHasSearched] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [currentFilters, setCurrentFilters] = useState<SearchFilters | null>(null);
+    const [currentFilters, setCurrentFilters] = useState<AllSearchFilters | null>(null);
 
-    const handleSearch = async (filters: SearchFilters, page: number = 1) => {
+    const handleSearch = async (filters: AllSearchFilters, page: number = 1) => {
         try {
             setIsSearching(true);
             setHasSearched(true);
@@ -213,7 +235,7 @@ export function Quickbook() {
     return (
         <div className="max-w-7xl mx-auto">
             <div className="mb-12">
-                <QuickbookSearchBar onSearch={(filters) => handleSearch(filters, 1)} />
+                <SearchBar quickbook={quickbook} onSearch={(filters) => handleSearch(filters, 1)} />
             </div>
 
             {error && (

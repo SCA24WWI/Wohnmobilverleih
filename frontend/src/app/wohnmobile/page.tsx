@@ -1,5 +1,5 @@
 import { Navbar, Footer } from '@/components';
-import { Quickbook } from '../quickbook';
+import { Quickbook } from '../quicksearch';
 
 export default function WohnmobilePage() {
     return (
@@ -11,7 +11,7 @@ export default function WohnmobilePage() {
                     <p className="text-lg text-center text-gray-600 mb-12 max-w-2xl mx-auto">
                         Entdecken Sie unsere große Auswahl an hochwertigen Wohnmobilen für jeden Bedarf.
                     </p>
-                    <Quickbook />
+                    <Quickbook quickbook={false} />
                 </div>
             </div>
             <Footer />
