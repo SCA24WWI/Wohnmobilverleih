@@ -71,23 +71,7 @@ export function Footer() {
                     </div>
                 </div>
                 <Typography color="blue-gray" className="md:text-center mt-16 font-normal !text-blue-gray-300">
-                    &copy; {CURRENT_YEAR} Made with{' '}
-                    <a
-                        href="https://www.material-tailwind.com"
-                        target="_blank"
-                        className="text-white hover:text-blue-gray-100"
-                    >
-                        Material Tailwind
-                    </a>{' '}
-                    by{' '}
-                    <a
-                        href="https://www.creative-tim.com"
-                        target="_blank"
-                        className="text-white hover:text-blue-gray-100"
-                    >
-                        Creative Tim
-                    </a>
-                    .
+                    &copy; {CURRENT_YEAR} Made with Next.js by Jannis Köllner and Hai Viet Vu.
                 </Typography>
             </div>
         </footer>

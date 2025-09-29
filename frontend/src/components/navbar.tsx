@@ -43,9 +43,14 @@ const NAV_MENU = [
 interface NavItemProps {
     children: React.ReactNode;
     href?: string;
+    transparent?: boolean;
 }
 
-function NavItem({ children, href }: NavItemProps) {
+interface NavbarProps {
+    transparent?: boolean;
+}
+
+function NavItem({ children, href, transparent = false }: NavItemProps) {
     return (
         <li>
             <Typography
@@ -53,7 +58,9 @@ function NavItem({ children, href }: NavItemProps) {
                 href={href || '#'}
                 target="_self"
                 variant="lead"
-                className="flex items-center gap-3 font-bold hover:text-gray-200 transition-colors duration-200 px-4 py-3 rounded-lg hover:bg-white/10 text-white text-lg drop-shadow-md"
+                className={`flex items-center gap-3 font-bold hover:text-gray-200 transition-colors duration-200 px-4 py-3 rounded-lg hover:bg-white/10 text-white text-lg ${
+                    transparent ? 'drop-shadow-md' : ''
+                }`}
             >
                 {children}
             </Typography>
@@ -61,7 +68,7 @@ function NavItem({ children, href }: NavItemProps) {
     );
 }
 
-export function Navbar() {
+export function Navbar({ transparent = false }: NavbarProps) {
     const [open, setOpen] = React.useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -69,8 +76,8 @@ export function Navbar() {
         <Menu>
             <MenuHandler>
                 <Button variant="text" className="flex items-center gap-2 p-2 text-white">
-                    <UserCircleIcon className="h-10 w-10 drop-shadow-md" />
-                    <ChevronDownIcon className="h-8 w-8 drop-shadow-md" />
+                    <UserCircleIcon className={`h-10 w-10 ${transparent ? 'drop-shadow-md' : ''}`} />
+                    <ChevronDownIcon className={`h-8 w-8 ${transparent ? 'drop-shadow-md' : ''}`} />
                 </Button>
             </MenuHandler>
             <MenuList>
@@ -115,14 +122,20 @@ export function Navbar() {
     }, []);
 
     return (
-        <div className="absolute top-0 left-0 right-0 px-10 z-50">
+        <div
+            className={`${transparent ? 'absolute' : 'fixed'} top-0 left-0 right-0 px-10 z-50 ${
+                !transparent ? 'bg-green-800 shadow-lg' : ''
+            }`}
+        >
             <div className="max-w-full">
-                <div className="flex items-center justify-between">
-                    <Typography 
+                <div className="flex items-center justify-between py-4">
+                    <Typography
                         as="a"
                         href="/"
-                        variant="h4" 
-                        className="font-bold text-white text-2xl lg:text-3xl drop-shadow-lg cursor-pointer hover:opacity-80 transition-opacity duration-300"
+                        variant="h4"
+                        className={`font-bold text-2xl lg:text-3xl cursor-pointer hover:opacity-80 transition-opacity duration-300 ${
+                            transparent ? 'text-white drop-shadow-lg' : 'text-white'
+                        }`}
                     >
                         Wohnmobil
                         <br /> Verleih
@@ -132,8 +145,8 @@ export function Navbar() {
                     <div className="absolute left-1/2 transform -translate-x-1/2 hidden lg:block">
                         <ul className="flex items-center gap-8">
                             {NAV_MENU.map(({ name, icon: Icon, href }) => (
-                                <NavItem key={name} href={href}>
-                                    <Icon className="h-6 w-6 drop-shadow-md" />
+                                <NavItem key={name} href={href} transparent={transparent}>
+                                    <Icon className={`h-6 w-6 ${transparent ? 'drop-shadow-md' : ''}`} />
                                     {name}
                                 </NavItem>
                             ))}
@@ -146,12 +159,12 @@ export function Navbar() {
                         color="white"
                         size="lg"
                         onClick={handleOpen}
-                        className="ml-auto inline-block lg:hidden text-white drop-shadow-md"
+                        className={`ml-auto inline-block lg:hidden text-white ${transparent ? 'drop-shadow-md' : ''}`}
                     >
                         {open ? (
-                            <XMarkIcon strokeWidth={2} className="h-6 w-6 drop-shadow-md" />
+                            <XMarkIcon strokeWidth={2} className={`h-6 w-6 ${transparent ? 'drop-shadow-md' : ''}`} />
                         ) : (
-                            <Bars3Icon strokeWidth={2} className="h-6 w-6 drop-shadow-md" />
+                            <Bars3Icon strokeWidth={2} className={`h-6 w-6 ${transparent ? 'drop-shadow-md' : ''}`} />
                         )}
                     </IconButton>
                 </div>
@@ -159,7 +172,7 @@ export function Navbar() {
                     <div className="container mx-auto mt-3 border-t border-gray-200 px-2 pt-4">
                         <ul className="flex flex-col gap-4">
                             {NAV_MENU.map(({ name, icon: Icon, href }) => (
-                                <NavItem key={name} href={href}>
+                                <NavItem key={name} href={href} transparent={transparent}>
                                     <Icon className="h-5 w-5" />
                                     {name}
                                 </NavItem>

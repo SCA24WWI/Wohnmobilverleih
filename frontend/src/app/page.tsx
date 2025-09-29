@@ -9,7 +9,7 @@ import Quickbook from './quickbook';
 export default function Campaign() {
     return (
         <>
-            <Navbar />
+            <Navbar transparent={true} />
             <Hero />
             <Suggestions />
             <Quickbook />

@@ -259,7 +259,7 @@ export function Quickbook() {
             )}
 
             {!isSearching && !error && hasSearched && vehicleData?.vehicles && (
-                <div className="px-4">
+                <div className="px-4 mb-8">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {vehicleData.vehicles.map((vehicle) => (
                             <VehicleCard key={vehicle.id} vehicle={vehicle} />
@@ -273,13 +273,13 @@ export function Quickbook() {
                 hasSearched &&
                 vehicleData?.pagination &&
                 vehicleData.pagination.totalPages > 1 && (
-                    <div className="flex justify-center items-center mt-12 px-4">
+                    <div className="flex justify-center items-center mt-12 mb-16 px-4">
                         <div className="flex items-center">{renderPaginationButtons()}</div>
                     </div>
                 )}
 
             {!isSearching && hasSearched && vehicleData?.vehicles?.length === 0 && !error && (
-                <div className="text-center py-16 px-4">
+                <div className="text-center py-16 px-4 mb-16">
                     <Typography variant="h4" className="text-2xl font-bold text-gray-900 mb-4">
                         Keine Wohnmobile gefunden
                     </Typography>
