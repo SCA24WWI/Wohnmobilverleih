@@ -76,19 +76,23 @@ export function VehicleCard({ vehicle }: VehicleCardProps) {
                 </div>
 
                 <div className="flex gap-3">
-                    <button
-                        className={`flex-1 py-2 px-4 rounded-lg font-semibold transition-colors ${
+                    <a
+                        href={`/wohnmobile/${vehicle.id}`}
+                        className={`flex-1 py-2 px-4 rounded-lg font-semibold transition-colors text-center ${
                             vehicle.available
                                 ? 'bg-green-600 hover:bg-green-700 text-white'
                                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                         }`}
-                        disabled={!vehicle.available}
+                        style={!vehicle.available ? { pointerEvents: 'none' } : {}}
                     >
                         {vehicle.available ? 'Jetzt buchen' : 'Nicht verfügbar'}
-                    </button>
-                    <button className="px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium text-gray-700 hover:border-gray-400">
+                    </a>
+                    <a 
+                        href={`/wohnmobile/${vehicle.id}`}
+                        className="px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium text-gray-700 hover:border-gray-400 text-center"
+                    >
                         Details
-                    </button>
+                    </a>
                 </div>
             </div>
         </div>

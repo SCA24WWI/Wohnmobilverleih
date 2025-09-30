@@ -35,6 +35,8 @@ CREATE TABLE
         end_datum DATE NOT NULL,
         gesamtpreis NUMERIC(10, 2),
         status VARCHAR(20) NOT NULL DEFAULT 'angefragt' CHECK (status IN ('angefragt', 'bestätigt', 'storniert')),
+        extras JSONB DEFAULT '[]',
+        notizen TEXT,
         gebucht_am TIMESTAMP
         WITH
             TIME ZONE DEFAULT NOW (),
