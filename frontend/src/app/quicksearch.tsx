@@ -3,74 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { Typography } from '@material-tailwind/react';
 import { SearchBar, VehicleCard } from '@/components';
-import { API_CONFIG, buildApiUrl } from '@/config/api';
+import { fetchVehicles } from '@/components/search-bar';
 
-async function fetchVehicles(filters?: SearchFilters, page: number = 1): Promise<VehicleSearchResponse> {
-    try {
-        const queryParams = filters
-            ? {
-                  location: filters.location?.trim() || undefined,
-                  guests: filters.guests > 0 ? filters.guests : undefined,
-                  dateFrom: filters.dateFrom || undefined,
-                  dateTo: filters.dateTo || undefined,
-                  page: page.toString(),
-                  limit: '6'
-              }
-            : { page: page.toString(), limit: '6' };
-
-        const url = buildApiUrl(API_CONFIG.ENDPOINTS.VEHICLES.SEARCH, queryParams);
-        const response = await fetch(url);
-
-        if (!response.ok) {
-            throw new Error('Failed to fetch vehicles');
-        }
-
-        const apiData = await response.json();
-
-        const mappedVehicles = apiData.vehicles.map((vehicle: any, index: number) => ({
-            id: vehicle.id || index,
-            name: vehicle.name || 'Unbekanntes Fahrzeug',
-            type: vehicle.modell || 'Unbekannt',
-            guests: vehicle.bettenzahl || 2,
-            location: vehicle.ort || 'Unbekannt',
-            pricePerDay: parseFloat(vehicle.preis_pro_tag) || 0,
-            image: `/image/books/RectangleBig${(index % 7) + 1}.svg`,
-            features: getFeaturesByModel(vehicle.modell || '', vehicle.bettenzahl || 2),
-            available: true,
-            fuehrerschein: vehicle.fuehrerschein || '',
-            beschreibung: vehicle.beschreibung || null
-        }));
-
-        return {
-            vehicles: mappedVehicles,
-            pagination: apiData.pagination
-        };
-    } catch (error) {
-        console.error('Error fetching vehicles:', error);
-        throw error;
-    }
-}
-
-function getFeaturesByModel(modell: string, bettenzahl: number): string[] {
-    const baseFeatures = ['Küche', 'Bett'];
-
-    if (!modell) return baseFeatures;
-
-    const modellLower = modell.toLowerCase();
-
-    if (modellLower.includes('teilintegriert')) {
-        return [...baseFeatures, 'Dusche', 'WC', 'Sitzgruppe'];
-    } else if (modellLower.includes('alkoven')) {
-        return [...baseFeatures, 'Dusche', 'WC', 'Sitzgruppe', 'Großer Stauraum'];
-    } else if (modellLower.includes('vollintegriert')) {
-        return [...baseFeatures, 'Dusche', 'WC', 'Sitzgruppe', 'Klimaanlage', 'Luxus-Ausstattung'];
-    } else if (modellLower.includes('kastenwagen')) {
-        return [...baseFeatures, 'Kompakt', 'Stadtfahrtauglich'];
-    }
-
-    return baseFeatures;
-}
-
+// Importiere Interfaces von SearchBar
 interface Vehicle {
     id: number;
     name: string;
@@ -84,31 +19,6 @@ interface Vehicle {
     fuehrerschein?: string;
     beschreibung?: string;
 }
-
-// Basic search data for simple search (wird für Kompatibilität benötigt)
-interface SearchFilters {
-    location: string;
-    dateFrom: string;
-    dateTo: string;
-    guests: number;
-}
-
-// Extended search data for detailed vehicle search (neu hinzugefügt)
-interface ExtendedSearchFilters extends SearchFilters {
-    pets?: boolean;
-    kitchen?: boolean;
-    wifi?: boolean;
-    bathroom?: boolean;
-    airConditioning?: boolean;
-    transmission?: 'automatic' | 'manual' | '';
-    priceRange?: {
-        min: number;
-        max: number;
-    };
-}
-
-// Union type für beide Filter-Typen
-type AllSearchFilters = SearchFilters | ExtendedSearchFilters;
 
 interface PaginationInfo {
     currentPage: number;
@@ -124,40 +34,46 @@ interface VehicleSearchResponse {
     pagination: PaginationInfo;
 }
 
-interface QuickbookProps {
+interface VehicleSearchProps {
     quickbook?: boolean;
+    initialFilters?: any; // Filter die von der Hero-Seite übergeben werden
 }
 
-export function Quickbook({ quickbook = true }: QuickbookProps) {
+export function VehicleSearch({ quickbook = true, initialFilters }: VehicleSearchProps) {
     const [vehicleData, setVehicleData] = useState<VehicleSearchResponse | null>(null);
     const [isSearching, setIsSearching] = useState(false);
     const [hasSearched, setHasSearched] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [currentFilters, setCurrentFilters] = useState<AllSearchFilters | null>(null);
+    const [currentFilters, setCurrentFilters] = useState<any>(null);
 
-    const handleSearch = async (filters: AllSearchFilters, page: number = 1) => {
-        try {
-            setIsSearching(true);
-            setHasSearched(true);
-            setError(null);
+    // Callback für SearchBar Ergebnisse
+    const handleSearchResults = (
+        results: VehicleSearchResponse | null,
+        searching: boolean,
+        searchError: string | null
+    ) => {
+        setVehicleData(results);
+        setIsSearching(searching);
+        setError(searchError);
+        setHasSearched(true);
 
-            if (page === 1) {
-                setCurrentFilters(filters);
-            }
-
-            const results = await fetchVehicles(filters, page);
-            setVehicleData(results);
-        } catch (err) {
-            setError('Fehler bei der Suche. Bitte versuchen Sie es erneut.');
-            console.error('Error searching vehicles:', err);
-        } finally {
-            setIsSearching(false);
+        if (results) {
+            // Filter für Pagination speichern
+            setCurrentFilters(initialFilters);
         }
     };
 
     const handlePageChange = async (newPage: number) => {
         if (currentFilters && !isSearching) {
-            await handleSearch(currentFilters, newPage);
+            try {
+                setIsSearching(true);
+                const results = await fetchVehicles(currentFilters, newPage);
+                setVehicleData(results);
+            } catch (err) {
+                setError('Fehler beim Laden der Seite. Bitte versuchen Sie es erneut.');
+            } finally {
+                setIsSearching(false);
+            }
         }
     };
 
@@ -235,7 +151,11 @@ export function Quickbook({ quickbook = true }: QuickbookProps) {
     return (
         <div className="max-w-7xl mx-auto">
             <div className="mb-12">
-                <SearchBar quickbook={quickbook} onSearch={(filters) => handleSearch(filters, 1)} />
+                <SearchBar
+                    quickbook={quickbook}
+                    onSearchResults={handleSearchResults}
+                    initialFilters={initialFilters}
+                />
             </div>
 
             {error && (
@@ -314,4 +234,4 @@ export function Quickbook({ quickbook = true }: QuickbookProps) {
     );
 }
 
-export default Quickbook;
+export default VehicleSearch;

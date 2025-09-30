@@ -45,8 +45,28 @@ function Hero() {
                     <SearchBar
                         quickbook={true}
                         onSearch={(filters) => {
-                            console.log('Hero Search:', filters);
-                            // Hier kannst du die Suche implementieren oder zur Wohnmobile-Seite weiterleiten
+                            // Filter in URL-Parameter konvertieren
+                            const searchParams = new URLSearchParams();
+
+                            if (filters.location?.trim()) {
+                                searchParams.set('location', filters.location.trim());
+                            }
+                            if (filters.dateFrom) {
+                                searchParams.set('dateFrom', filters.dateFrom);
+                            }
+                            if (filters.dateTo) {
+                                searchParams.set('dateTo', filters.dateTo);
+                            }
+                            if (filters.guests > 0) {
+                                searchParams.set('guests', filters.guests.toString());
+                            }
+
+                            // Erweiterte Filter werden im Hero-Bereich nicht verwendet,
+                            // da sie dort nicht angezeigt werden (quickbook=true)
+
+                            // Zur Wohnmobile-Seite mit Suchparametern navigieren
+                            const url = `/wohnmobile?${searchParams.toString()}`;
+                            window.location.href = url;
                         }}
                     />
                 </div>

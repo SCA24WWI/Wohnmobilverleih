@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
+import { API_CONFIG, buildApiUrl } from '@/config/api';
 import {
     Card,
     CardBody,
@@ -24,6 +25,126 @@ import {
     SparklesIcon
 } from '@heroicons/react/24/outline';
 
+// API Response Interfaces
+interface Vehicle {
+    id: number;
+    name: string;
+    type: string;
+    guests: number;
+    location: string;
+    pricePerDay: number;
+    image: string;
+    features: string[];
+    available: boolean;
+    fuehrerschein?: string;
+    beschreibung?: string;
+}
+
+interface PaginationInfo {
+    currentPage: number;
+    totalPages: number;
+    totalVehicles: number;
+    vehiclesPerPage: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+}
+
+interface VehicleSearchResponse {
+    vehicles: Vehicle[];
+    pagination: PaginationInfo;
+}
+
+// Basic search filters
+interface SearchFilters {
+    location: string;
+    dateFrom: string;
+    dateTo: string;
+    guests: number;
+}
+
+// Extended search filters
+interface ExtendedSearchFilters extends SearchFilters {
+    pets?: boolean;
+    kitchen?: boolean;
+    wifi?: boolean;
+    bathroom?: boolean;
+    airConditioning?: boolean;
+    transmission?: 'automatic' | 'manual' | '';
+    priceRange?: {
+        min: number;
+        max: number;
+    };
+}
+
+type AllSearchFilters = SearchFilters | ExtendedSearchFilters;
+
+// API Functions
+async function fetchVehicles(filters?: SearchFilters, page: number = 1): Promise<VehicleSearchResponse> {
+    try {
+        const queryParams = filters
+            ? {
+                  location: filters.location?.trim() || undefined,
+                  guests: filters.guests > 0 ? filters.guests : undefined,
+                  dateFrom: filters.dateFrom || undefined,
+                  dateTo: filters.dateTo || undefined,
+                  page: page.toString(),
+                  limit: '6'
+              }
+            : { page: page.toString(), limit: '6' };
+
+        const url = buildApiUrl(API_CONFIG.ENDPOINTS.VEHICLES.SEARCH, queryParams);
+        const response = await fetch(url);
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch vehicles');
+        }
+
+        const apiData = await response.json();
+
+        const mappedVehicles = apiData.vehicles.map((vehicle: any, index: number) => ({
+            id: vehicle.id || index,
+            name: vehicle.name || 'Unbekanntes Fahrzeug',
+            type: vehicle.modell || 'Unbekannt',
+            guests: vehicle.bettenzahl || 2,
+            location: vehicle.ort || 'Unbekannt',
+            pricePerDay: parseFloat(vehicle.preis_pro_tag) || 0,
+            image: `/image/books/RectangleBig${(index % 7) + 1}.svg`,
+            features: getFeaturesByModel(vehicle.modell || '', vehicle.bettenzahl || 2),
+            available: true,
+            fuehrerschein: vehicle.fuehrerschein || '',
+            beschreibung: vehicle.beschreibung || null
+        }));
+
+        return {
+            vehicles: mappedVehicles,
+            pagination: apiData.pagination
+        };
+    } catch (error) {
+        console.error('Error fetching vehicles:', error);
+        throw error;
+    }
+}
+
+function getFeaturesByModel(modell: string, bettenzahl: number): string[] {
+    const baseFeatures = ['Küche', 'Bett'];
+
+    if (!modell) return baseFeatures;
+
+    const modellLower = modell.toLowerCase();
+
+    if (modellLower.includes('teilintegriert')) {
+        return [...baseFeatures, 'Dusche', 'WC', 'Sitzgruppe'];
+    } else if (modellLower.includes('alkoven')) {
+        return [...baseFeatures, 'Dusche', 'WC', 'Sitzgruppe', 'Großer Stauraum'];
+    } else if (modellLower.includes('vollintegriert')) {
+        return [...baseFeatures, 'Dusche', 'WC', 'Sitzgruppe', 'Klimaanlage', 'Luxus-Ausstattung'];
+    } else if (modellLower.includes('kastenwagen')) {
+        return [...baseFeatures, 'Kompakt', 'Stadtfahrtauglich'];
+    }
+
+    return baseFeatures;
+}
+
 // Vereinfachte Interfaces
 interface SearchFormData {
     location: string;
@@ -42,10 +163,15 @@ interface SearchFormData {
 
 interface SearchBarProps {
     quickbook?: boolean;
-    onSearch: (filters: SearchFormData) => void;
+    onSearch?: (filters: SearchFormData) => void;
+    onSearchResults?: (results: VehicleSearchResponse | null, isSearching: boolean, error: string | null) => void;
+    initialFilters?: any;
 }
 
-export function SearchBar({ quickbook = true, onSearch }: SearchBarProps) {
+export function SearchBar({ quickbook = true, onSearch, onSearchResults, initialFilters }: SearchBarProps) {
+    // Ref für initialFilters um zu verfolgen ob bereits initialisiert
+    const hasInitialized = useRef(false);
+
     // Ein einziger State für alle Daten
     const [formData, setFormData] = useState<SearchFormData>({
         location: '',
@@ -61,9 +187,90 @@ export function SearchBar({ quickbook = true, onSearch }: SearchBarProps) {
         priceRange: { min: 0, max: 1000 }
     });
 
+    // useEffect um initialFilters zu laden
+    React.useEffect(() => {
+        if (initialFilters && Object.keys(initialFilters).length > 0) {
+            console.log('Loading initial filters in SearchBar:', initialFilters);
+            setFormData((prev) => ({
+                ...prev,
+                location: initialFilters.location || prev.location,
+                dateFrom: initialFilters.dateFrom || prev.dateFrom,
+                dateTo: initialFilters.dateTo || prev.dateTo,
+                guests: initialFilters.guests || prev.guests,
+                pets: initialFilters.pets || prev.pets,
+                kitchen: initialFilters.kitchen || prev.kitchen,
+                wifi: initialFilters.wifi || prev.wifi,
+                bathroom: initialFilters.bathroom || prev.bathroom,
+                airConditioning: initialFilters.airConditioning || prev.airConditioning,
+                transmission: initialFilters.transmission || prev.transmission,
+                priceRange: initialFilters.priceRange || prev.priceRange
+            }));
+
+            // Erweiterte Filter anzeigen, wenn sie gesetzt sind
+            if (
+                initialFilters.pets ||
+                initialFilters.kitchen ||
+                initialFilters.wifi ||
+                initialFilters.bathroom ||
+                initialFilters.airConditioning ||
+                initialFilters.transmission
+            ) {
+                setShowAdvancedFilters(true);
+            }
+        }
+    }, [initialFilters]);
+
+    // Automatische Suche bei initialFilters - nur einmal ausführen
+    React.useEffect(() => {
+        if (
+            initialFilters &&
+            Object.keys(initialFilters).length > 0 &&
+            !quickbook &&
+            onSearchResults &&
+            !hasInitialized.current
+        ) {
+            console.log('Auto-searching with initial filters:', initialFilters);
+            hasInitialized.current = true;
+            handleSearch(initialFilters, 1);
+        }
+    }, [initialFilters, quickbook, onSearchResults]);
+
     const [guestMenuOpen, setGuestMenuOpen] = useState(false);
     const [transmissionMenuOpen, setTransmissionMenuOpen] = useState(false);
     const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+
+    // Search state
+    const [isSearching, setIsSearching] = useState(false);
+    const [searchError, setSearchError] = useState<string | null>(null);
+
+    // handleSearch Funktion - verschoben von quicksearch.tsx
+    const handleSearch = useCallback(
+        async (filters: AllSearchFilters, page: number = 1) => {
+            try {
+                setIsSearching(true);
+                setSearchError(null);
+
+                const results = await fetchVehicles(filters, page);
+
+                // Ergebnisse an Parent-Komponente weiterleiten
+                if (onSearchResults) {
+                    onSearchResults(results, false, null);
+                }
+            } catch (err) {
+                const error = 'Fehler bei der Suche. Bitte versuchen Sie es erneut.';
+                setSearchError(error);
+                console.error('Error searching vehicles:', err);
+
+                // Fehler an Parent-Komponente weiterleiten
+                if (onSearchResults) {
+                    onSearchResults(null, false, error);
+                }
+            } finally {
+                setIsSearching(false);
+            }
+        },
+        [onSearchResults]
+    );
 
     // Vereinfachte Update-Funktion
     const updateField = (field: keyof SearchFormData, value: any) => {
@@ -103,7 +310,13 @@ export function SearchBar({ quickbook = true, onSearch }: SearchBarProps) {
                         className="space-y-6"
                         onSubmit={(e) => {
                             e.preventDefault();
-                            onSearch(formData);
+                            // Wenn onSearch vorhanden ist (Hero-Modus), das verwenden
+                            if (onSearch) {
+                                onSearch(formData);
+                            } else {
+                                // Sonst direkte Suche ausführen (Wohnmobile-Seite)
+                                handleSearch(formData, 1);
+                            }
                         }}
                     >
                         <div className="flex flex-col xl:flex-row items-stretch xl:items-center gap-4 xl:gap-6 min-w-fit">
@@ -187,10 +400,11 @@ export function SearchBar({ quickbook = true, onSearch }: SearchBarProps) {
                             <Button
                                 type="submit"
                                 size="lg"
-                                className="flex-shrink-0 bg-green-800 hover:bg-green-600 transition-colors duration-200 h-12 px-8 flex items-center justify-center gap-2 normal-case text-base font-semibold whitespace-nowrap"
+                                disabled={isSearching}
+                                className="flex-shrink-0 bg-green-800 hover:bg-green-600 disabled:bg-gray-400 transition-colors duration-200 h-12 px-8 flex items-center justify-center gap-2 normal-case text-base font-semibold whitespace-nowrap"
                             >
                                 <MagnifyingGlassIcon className="h-5 w-5" />
-                                Camper finden
+                                {isSearching ? 'Suche...' : 'Camper finden'}
                             </Button>
                         </div>
 
@@ -303,4 +517,6 @@ export function SearchBar({ quickbook = true, onSearch }: SearchBarProps) {
     );
 }
 
+// Export der handleSearch Funktion für externe Verwendung
+export { fetchVehicles };
 export default SearchBar;
