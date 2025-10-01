@@ -77,7 +77,7 @@ export function VehicleCard({ vehicle }: VehicleCardProps) {
 
                 <div className="flex gap-3">
                     <a
-                        href={`/wohnmobile/${vehicle.id}`}
+                        href={`/buchung/${vehicle.id}`}
                         className={`flex-1 py-2 px-4 rounded-lg font-semibold transition-colors text-center ${
                             vehicle.available
                                 ? 'bg-green-600 hover:bg-green-700 text-white'
@@ -87,7 +87,7 @@ export function VehicleCard({ vehicle }: VehicleCardProps) {
                     >
                         {vehicle.available ? 'Jetzt buchen' : 'Nicht verfügbar'}
                     </a>
-                    <a 
+                    <a
                         href={`/wohnmobile/${vehicle.id}`}
                         className="px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium text-gray-700 hover:border-gray-400 text-center"
                     >

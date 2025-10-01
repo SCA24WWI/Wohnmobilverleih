@@ -21,6 +21,8 @@ CREATE TABLE
         fuehrerschein VARCHAR(10) NOT NULL,
         ort VARCHAR(100),
         preis_pro_tag NUMERIC(8, 2) NOT NULL,
+        hauptbild VARCHAR(500),
+        galerie_bilder JSONB DEFAULT '[]',
         erstellt_am TIMESTAMP
         WITH
             TIME ZONE DEFAULT NOW ()
@@ -68,7 +70,9 @@ INSERT INTO
         bettenzahl,
         fuehrerschein,
         ort,
-        preis_pro_tag
+        preis_pro_tag,
+        hauptbild,
+        galerie_bilder
     )
 VALUES
     (
@@ -77,7 +81,9 @@ VALUES
         4,
         'B',
         'München',
-        110.00
+        110.00,
+        '/image/vehicles/knaus-sky-traveller/main.png',
+        '["/image/vehicles/knaus-sky-traveller/gallery1.png", "/image/vehicles/knaus-sky-traveller/gallery2.png", "/image/vehicles/knaus-sky-traveller/gallery3.png"]'
     ),
     (
         'Bürstner Lyseo',
@@ -85,7 +91,9 @@ VALUES
         5,
         'C1',
         'Berlin',
-        135.50
+        135.50,
+        '/image/vehicles/buerstner-lyseo/main.png',
+        '["/image/vehicles/buerstner-lyseo/gallery1.png", "/image/vehicles/buerstner-lyseo/gallery2.png", "/image/vehicles/buerstner-lyseo/gallery3.png"]'
     ),
     (
         'Hymer B-Klasse SL',
@@ -93,7 +101,9 @@ VALUES
         4,
         'C1',
         'Hamburg',
-        145.00
+        145.00,
+        '/image/vehicles/hymer-b-klasse-sl/main.png',
+        '["/image/vehicles/hymer-b-klasse-sl/gallery1.png", "/image/vehicles/hymer-b-klasse-sl/gallery2.png", "/image/vehicles/hymer-b-klasse-sl/gallery3.png", "/image/vehicles/hymer-b-klasse-sl/gallery4.png"]'
     ),
     (
         'Weinsberg CaraCore',
@@ -101,7 +111,9 @@ VALUES
         2,
         'B',
         'Köln',
-        85.00
+        85.00,
+        '/image/vehicles/weinsberg-caracore/main.png',
+        '["/image/vehicles/weinsberg-caracore/gallery1.png", "/image/vehicles/weinsberg-caracore/gallery2.png", "/image/vehicles/weinsberg-caracore/gallery3.png"]'
     ),
     (
         'Dethleffs Trend',
@@ -109,7 +121,9 @@ VALUES
         6,
         'C1',
         'Frankfurt',
-        125.00
+        125.00,
+        '/image/vehicles/dethleffs-trend/main.png',
+        '["/image/vehicles/dethleffs-trend/gallery1.png", "/image/vehicles/dethleffs-trend/gallery2.png", "/image/vehicles/dethleffs-trend/gallery3.png"]'
     ),
     (
         'Adria Coral Axess',
@@ -117,7 +131,9 @@ VALUES
         5,
         'C1',
         'Stuttgart',
-        155.00
+        155.00,
+        '/image/vehicles/adria-coral-axess/main.png',
+        '["/image/vehicles/adria-coral-axess/gallery1.png", "/image/vehicles/adria-coral-axess/gallery2.png", "/image/vehicles/adria-coral-axess/gallery3.png"]'
     ),
     (
         'Pössl Roadcamp',
@@ -125,7 +141,9 @@ VALUES
         2,
         'B',
         'Dresden',
-        95.00
+        95.00,
+        '/image/vehicles/poessl-roadcamp/main.png',
+        '["/image/vehicles/poessl-roadcamp/gallery1.png", "/image/vehicles/poessl-roadcamp/gallery2.png", "/image/vehicles/poessl-roadcamp/gallery3.png"]'
     ),
     (
         'Carthago Chic S-Plus',
@@ -133,7 +151,9 @@ VALUES
         4,
         'C1',
         'Düsseldorf',
-        165.00
+        165.00,
+        '/image/vehicles/carthago-chic-s-plus/main.png',
+        '["/image/vehicles/carthago-chic-s-plus/gallery1.png", "/image/vehicles/carthago-chic-s-plus/gallery2.png", "/image/vehicles/carthago-chic-s-plus/gallery3.png"]'
     ),
     (
         'Laika Ecovip',
@@ -141,7 +161,9 @@ VALUES
         3,
         'B',
         'Leipzig',
-        115.00
+        115.00,
+        '/image/vehicles/laika-ecovip/main.png',
+        '["/image/vehicles/laika-ecovip/gallery1.png", "/image/vehicles/laika-ecovip/gallery2.png", "/image/vehicles/laika-ecovip/gallery3.png"]'
     ),
     (
         'Hobby Optima Deluxe',
@@ -149,7 +171,9 @@ VALUES
         6,
         'C1',
         'Nürnberg',
-        140.00
+        140.00,
+        '/image/vehicles/hobby-optima-deluxe/main.png',
+        '["/image/vehicles/hobby-optima-deluxe/gallery1.png", "/image/vehicles/hobby-optima-deluxe/gallery2.png", "/image/vehicles/hobby-optima-deluxe/gallery3.png", "/image/vehicles/hobby-optima-deluxe/gallery4.png"]'
     ),
     (
         'Malibu Van Charming',
@@ -157,7 +181,9 @@ VALUES
         2,
         'B',
         'Bremen',
-        88.00
+        88.00,
+        '/image/vehicles/malibu-van-charming/main.png',
+        '["/image/vehicles/malibu-van-charming/gallery1.png", "/image/vehicles/malibu-van-charming/gallery2.png", "/image/vehicles/malibu-van-charming/gallery3.png"]'
     ),
     (
         'Roller Team Zefiro',
@@ -165,7 +191,9 @@ VALUES
         4,
         'C1',
         'Hannover',
-        120.00
+        120.00,
+        '/image/vehicles/roller-team-zefiro/main.png',
+        '["/image/vehicles/roller-team-zefiro/gallery1.png", "/image/vehicles/roller-team-zefiro/gallery2.png", "/image/vehicles/roller-team-zefiro/gallery3.png"]'
     ),
     (
         'Sunlight Cliff Adventure',
@@ -173,5 +201,7 @@ VALUES
         7,
         'C1',
         'Dortmund',
-        150.00
+        150.00,
+        '/image/vehicles/sunlight-cliff-adventure/main.png',
+        '["/image/vehicles/sunlight-cliff-adventure/gallery1.png", "/image/vehicles/sunlight-cliff-adventure/gallery2.png", "/image/vehicles/sunlight-cliff-adventure/gallery3.png", "/image/vehicles/sunlight-cliff-adventure/gallery4.png"]'
     );

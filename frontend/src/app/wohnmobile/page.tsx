@@ -1,7 +1,7 @@
 'use client';
 
 import { Navbar, Footer } from '@/components';
-import { VehicleSearch } from '../quicksearch';
+import { VehicleSearch } from '../vehiclesearch';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 

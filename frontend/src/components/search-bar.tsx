@@ -34,6 +34,7 @@ interface Vehicle {
     location: string;
     pricePerDay: number;
     image: string;
+    galleryImages?: string[]; // Neu: Array für Galerie-Bilder
     features: string[];
     available: boolean;
     fuehrerschein?: string;
@@ -101,19 +102,41 @@ async function fetchVehicles(filters?: SearchFilters, page: number = 1): Promise
 
         const apiData = await response.json();
 
-        const mappedVehicles = apiData.vehicles.map((vehicle: any, index: number) => ({
-            id: vehicle.id || index,
-            name: vehicle.name || 'Unbekanntes Fahrzeug',
-            type: vehicle.modell || 'Unbekannt',
-            guests: vehicle.bettenzahl || 2,
-            location: vehicle.ort || 'Unbekannt',
-            pricePerDay: parseFloat(vehicle.preis_pro_tag) || 0,
-            image: `/image/books/RectangleBig${(index % 7) + 1}.svg`,
-            features: getFeaturesByModel(vehicle.modell || '', vehicle.bettenzahl || 2),
-            available: true,
-            fuehrerschein: vehicle.fuehrerschein || '',
-            beschreibung: vehicle.beschreibung || null
-        }));
+        //TODO: Mapping anpassen wenn API steht
+        // Bilder hier nur als Platzhalter
+        const mappedVehicles = apiData.vehicles.map((vehicle: any, index: number) => {
+            // Sichere Verarbeitung der Galerie-Bilder
+            let galleryImages: string[] = [];
+            if (vehicle.galerie_bilder) {
+                try {
+                    // Prüfen ob es bereits ein Array ist oder ein JSON-String
+                    if (Array.isArray(vehicle.galerie_bilder)) {
+                        galleryImages = vehicle.galerie_bilder;
+                    } else if (typeof vehicle.galerie_bilder === 'string') {
+                        galleryImages = JSON.parse(vehicle.galerie_bilder);
+                    }
+                } catch (parseError) {
+                    console.warn(`Fehler beim Parsen der Galerie-Bilder für Fahrzeug ${vehicle.name}:`, parseError);
+                    console.warn('Rohdaten:', vehicle.galerie_bilder);
+                    galleryImages = [];
+                }
+            }
+
+            return {
+                id: vehicle.id || index,
+                name: vehicle.name || 'Unbekanntes Fahrzeug',
+                type: vehicle.modell || 'Unbekannt',
+                guests: vehicle.bettenzahl || 2,
+                location: vehicle.ort || 'Unbekannt',
+                pricePerDay: parseFloat(vehicle.preis_pro_tag) || 0,
+                image: vehicle.hauptbild || `/image/books/RectangleBig${(index % 7) + 1}.svg`, // Hauptbild aus DB oder Fallback
+                galleryImages: galleryImages, // Sicher geparste Galerie-Bilder
+                features: getFeaturesByModel(vehicle.modell || '', vehicle.bettenzahl || 2),
+                available: true,
+                fuehrerschein: vehicle.fuehrerschein || '',
+                beschreibung: vehicle.beschreibung || null
+            };
+        });
 
         return {
             vehicles: mappedVehicles,
@@ -164,7 +187,7 @@ interface SearchFormData {
 interface SearchBarProps {
     quickbook?: boolean;
     onSearch?: (filters: SearchFormData) => void;
-    onSearchResults?: (results: VehicleSearchResponse | null, isSearching: boolean, error: string | null) => void;
+    onSearchResults?: (results: VehicleSearchResponse | null, isSearching: boolean, error: string | null, currentFilters?: any) => void;
     initialFilters?: any;
 }
 
@@ -254,7 +277,7 @@ export function SearchBar({ quickbook = true, onSearch, onSearchResults, initial
 
                 // Ergebnisse an Parent-Komponente weiterleiten
                 if (onSearchResults) {
-                    onSearchResults(results, false, null);
+                    onSearchResults(results, false, null, filters);
                 }
             } catch (err) {
                 const error = 'Fehler bei der Suche. Bitte versuchen Sie es erneut.';
@@ -263,7 +286,7 @@ export function SearchBar({ quickbook = true, onSearch, onSearchResults, initial
 
                 // Fehler an Parent-Komponente weiterleiten
                 if (onSearchResults) {
-                    onSearchResults(null, false, error);
+                    onSearchResults(null, false, error, filters);
                 }
             } finally {
                 setIsSearching(false);

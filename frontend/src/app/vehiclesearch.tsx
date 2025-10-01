@@ -14,6 +14,7 @@ interface Vehicle {
     location: string;
     pricePerDay: number;
     image: string;
+    galleryImages?: string[]; // Neu: Array für Galerie-Bilder
     features: string[];
     available: boolean;
     fuehrerschein?: string;
@@ -50,7 +51,8 @@ export function VehicleSearch({ quickbook = true, initialFilters }: VehicleSearc
     const handleSearchResults = (
         results: VehicleSearchResponse | null,
         searching: boolean,
-        searchError: string | null
+        searchError: string | null,
+        currentSearchFilters?: any
     ) => {
         setVehicleData(results);
         setIsSearching(searching);
@@ -58,8 +60,8 @@ export function VehicleSearch({ quickbook = true, initialFilters }: VehicleSearc
         setHasSearched(true);
 
         if (results) {
-            // Filter für Pagination speichern
-            setCurrentFilters(initialFilters);
+            // Filter für Pagination speichern - verwende die aktuellen Filter oder initialFilters als Fallback
+            setCurrentFilters(currentSearchFilters || initialFilters);
         }
     };
 
