@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Navbar, Footer } from '@/components';
+import { Navbar, Footer, ToastProvider, useToast } from '@/components';
+import AvailabilityCalendar from '@/components/availability-calendar';
 import { API_CONFIG, buildApiUrl } from '@/config/api';
 
 // Interface für Wohnmobil-Daten
@@ -33,10 +34,11 @@ const sampleFeatures = [
     'Rückfahrkamera'
 ];
 
-const VehicleDetailPage: React.FC = () => {
+const VehicleDetailContent: React.FC = () => {
     const params = useParams();
     const router = useRouter();
     const vehicleId = params.id as string;
+    const { showError, showWarning } = useToast();
 
     const [vehicle, setVehicle] = useState<Vehicle | null>(null);
     const [loading, setLoading] = useState(true);
@@ -136,6 +138,69 @@ const VehicleDetailPage: React.FC = () => {
             setNights(0);
         }
     }, [startDate, endDate]);
+
+    // API-Verfügbarkeitsprüfung
+    const checkAvailability = async (startDate: string, endDate: string): Promise<boolean> => {
+        try {
+            const response = await fetch(
+                buildApiUrl(API_CONFIG.ENDPOINTS.BOOKINGS.CHECK_AVAILABILITY, {
+                    vehicle_id: vehicleId,
+                    start_date: startDate,
+                    end_date: endDate
+                })
+            );
+
+            if (!response.ok) {
+                console.warn('Verfügbarkeitsprüfung fehlgeschlagen');
+                return true;
+            }
+
+            const result = await response.json();
+            return result.available;
+        } catch (err) {
+            console.error('Fehler bei der Verfügbarkeitsprüfung:', err);
+            return true;
+        }
+    };
+
+    // Datumsfeld-Validierung
+    const handleDateFieldChange = async (type: 'start' | 'end', newDate: string) => {
+        if (type === 'start') {
+            setStartDate(newDate);
+            // Wenn bereits ein Enddatum ausgewählt ist, prüfe die Verfügbarkeit
+            if (endDate && newDate) {
+                const isAvailable = await checkAvailability(newDate, endDate);
+                if (!isAvailable) {
+                    showError(
+                        'Zeitraum nicht verfügbar',
+                        'Der gewählte Zeitraum ist bereits gebucht. Bitte wählen Sie andere Daten.'
+                    );
+                    setStartDate('');
+                    return;
+                }
+            }
+        } else {
+            setEndDate(newDate);
+            // Wenn bereits ein Startdatum ausgewählt ist, prüfe die Verfügbarkeit
+            if (startDate && newDate) {
+                const isAvailable = await checkAvailability(startDate, newDate);
+                if (!isAvailable) {
+                    showError(
+                        'Zeitraum nicht verfügbar',
+                        'Der gewählte Zeitraum ist bereits gebucht. Bitte wählen Sie andere Daten.'
+                    );
+                    setEndDate('');
+                    return;
+                }
+            }
+        }
+    };
+
+    // Kalender-Datumsauswahl behandeln
+    const handleCalendarDateSelect = (start: string, end: string) => {
+        setStartDate(start);
+        setEndDate(end);
+    };
 
     // Zur Buchungsseite mit Daten weiterleiten
     const handleBookingRedirect = () => {
@@ -341,19 +406,18 @@ const VehicleDetailPage: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* Verfügbarkeitskalender Platzhalter */}
-                            <div className="bg-white rounded-lg shadow-lg p-6">
-                                <h2 className="text-xl font-semibold mb-4">Verfügbarkeitskalender</h2>
-                                <div className="bg-gray-100 p-8 rounded-lg text-center">
-                                    <p className="text-gray-600">📅 Kalender wird hier implementiert</p>
-                                    <p className="text-sm text-gray-500 mt-2">Zeigt verfügbare und gebuchte Tage an</p>
-                                </div>
-                            </div>
+                            {/* Verfügbarkeitskalender */}
+                            <AvailabilityCalendar
+                                vehicleId={vehicleId}
+                                onDateSelect={handleCalendarDateSelect}
+                                selectedStartDate={startDate}
+                                selectedEndDate={endDate}
+                            />
                         </div>
 
                         {/* Rechte Spalte: Zusätzliche Informationen */}
                         <div className="lg:col-span-1">
-                            <div className="sticky top-8">
+                            <div className="sticky top-32">
                                 {/* Datums-Auswahl */}
                                 <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
                                     <h2 className="text-xl font-semibold mb-4">📅 Reisedaten wählen</h2>
@@ -370,7 +434,7 @@ const VehicleDetailPage: React.FC = () => {
                                                 type="date"
                                                 id="start-date"
                                                 value={startDate}
-                                                onChange={(e) => setStartDate(e.target.value)}
+                                                onChange={(e) => handleDateFieldChange('start', e.target.value)}
                                                 min={new Date().toISOString().split('T')[0]}
                                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                             />
@@ -387,7 +451,7 @@ const VehicleDetailPage: React.FC = () => {
                                                 type="date"
                                                 id="end-date"
                                                 value={endDate}
-                                                onChange={(e) => setEndDate(e.target.value)}
+                                                onChange={(e) => handleDateFieldChange('end', e.target.value)}
                                                 min={startDate || new Date().toISOString().split('T')[0]}
                                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                             />
@@ -458,6 +522,15 @@ const VehicleDetailPage: React.FC = () => {
             </div>
             <Footer />
         </>
+    );
+};
+
+// Wrapper-Komponente für Toast-Provider
+const VehicleDetailPage: React.FC = () => {
+    return (
+        <ToastProvider>
+            <VehicleDetailContent />
+        </ToastProvider>
     );
 };
 

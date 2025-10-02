@@ -28,6 +28,7 @@ CREATE TABLE
             TIME ZONE DEFAULT NOW ()
     );
 
+-- ZENTRALE BUCHUNGSTABELLE für alle Buchungen (vergangen, aktuell, zukünftig)
 CREATE TABLE
     IF NOT EXISTS buchungen (
         id SERIAL PRIMARY KEY,
@@ -35,11 +36,30 @@ CREATE TABLE
         kunde_id INTEGER NOT NULL REFERENCES benutzer (id) ON DELETE CASCADE,
         start_datum DATE NOT NULL,
         end_datum DATE NOT NULL,
-        gesamtpreis NUMERIC(10, 2),
-        status VARCHAR(20) NOT NULL DEFAULT 'angefragt' CHECK (status IN ('angefragt', 'bestätigt', 'storniert')),
+        -- Grundlegende Informationen
+        anzahl_naechte INTEGER,
+        gesamtpreis NUMERIC(10, 2) NOT NULL,
+        -- Status und Verwaltung
+        status VARCHAR(20) NOT NULL DEFAULT 'angefragt' CHECK (
+            status IN (
+                'angefragt',
+                'bestätigt',
+                'storniert',
+                'abgeschlossen',
+                'abgelehnt'
+            )
+        ),
+        -- Zusätzliche Informationen
         extras JSONB DEFAULT '[]',
         notizen TEXT,
-        gebucht_am TIMESTAMP
+        stornierung_grund TEXT,
+        storniert_am TIMESTAMP
+        WITH
+            TIME ZONE,
+            gebucht_am TIMESTAMP
+        WITH
+            TIME ZONE DEFAULT NOW (),
+            geaendert_am TIMESTAMP
         WITH
             TIME ZONE DEFAULT NOW (),
             CONSTRAINT start_vor_ende CHECK (start_datum < end_datum)
@@ -205,3 +225,167 @@ VALUES
         '/image/vehicles/sunlight-cliff-adventure/main.png',
         '["/image/vehicles/sunlight-cliff-adventure/gallery1.png", "/image/vehicles/sunlight-cliff-adventure/gallery2.png", "/image/vehicles/sunlight-cliff-adventure/gallery3.png", "/image/vehicles/sunlight-cliff-adventure/gallery4.png"]'
     );
+
+-- Beispiel-Buchungen für Oktober 2025
+INSERT INTO
+    buchungen (
+        wohnmobil_id,
+        kunde_id,
+        start_datum,
+        end_datum,
+        gesamtpreis,
+        status,
+        extras,
+        notizen
+    )
+VALUES
+    -- Knaus Sky Traveller (ID: 1) - 5 Tage
+    (
+        1,
+        2,
+        '2025-10-05',
+        '2025-10-10',
+        550.00,
+        'bestätigt',
+        '["Fahrradträger", "Zusatzkissen"]',
+        'Familienurlaub in Bayern'
+    ),
+    -- Bürstner Lyseo (ID: 2) - 7 Tage
+    (
+        2,
+        2,
+        '2025-10-12',
+        '2025-10-19',
+        948.50,
+        'bestätigt',
+        '["Campingstühle", "Grill"]',
+        'Herbstferien mit der Familie'
+    ),
+    -- Hymer B-Klasse SL (ID: 3) - 4 Tage
+    (
+        3,
+        2,
+        '2025-10-22',
+        '2025-10-26',
+        580.00,
+        'angefragt',
+        '["Navigationssystem"]',
+        'Wochenendtrip nach Norddeutschland'
+    ),
+    -- Weinsberg CaraCore (ID: 4) - 6 Tage
+    (
+        4,
+        2,
+        '2025-10-08',
+        '2025-10-14',
+        510.00,
+        'bestätigt',
+        '["Campingtisch", "Auffahrkeile"]',
+        'Städtetrip Rheinland'
+    ),
+    -- Dethleffs Trend (ID: 5) - 8 Tage
+    (
+        5,
+        2,
+        '2025-10-15',
+        '2025-10-23',
+        1000.00,
+        'bestätigt',
+        '["Außendusche", "Sonnenschutz"]',
+        'Herbsturlaub mit Großfamilie'
+    ),
+    -- Adria Coral Axess (ID: 6) - 3 Tage
+    (
+        6,
+        2,
+        '2025-10-27',
+        '2025-10-30',
+        465.00,
+        'angefragt',
+        '["Satellitenschüssel"]',
+        'Kurztrip Baden-Württemberg'
+    ),
+    -- Pössl Roadcamp (ID: 7) - 9 Tage
+    (
+        7,
+        2,
+        '2025-10-03',
+        '2025-10-12',
+        855.00,
+        'bestätigt',
+        '["Solarpanel", "Zusatzbatterie"]',
+        'Autarke Reise durch Sachsen'
+    ),
+    -- Carthago Chic S-Plus (ID: 8) - 5 Tage
+    (
+        8,
+        2,
+        '2025-10-18',
+        '2025-10-23',
+        825.00,
+        'bestätigt',
+        '["Premium-Ausstattung", "Concierge-Service"]',
+        'Luxusreise NRW'
+    ),
+    -- Laika Ecovip (ID: 9) - 6 Tage
+    (
+        9,
+        2,
+        '2025-10-09',
+        '2025-10-15',
+        690.00,
+        'angefragt',
+        '["Umweltpaket", "Recycling-Set"]',
+        'Nachhaltiger Urlaub'
+    ),
+    -- Hobby Optima Deluxe (ID: 10) - 10 Tage
+    (
+        10,
+        2,
+        '2025-10-01',
+        '2025-10-11',
+        1400.00,
+        'bestätigt',
+        '["Familien-Komplettpaket", "Kindersitze", "Spielzeug"]',
+        'Herbstferien Großfamilie'
+    ),
+    -- Malibu Van Charming (ID: 11) - 4 Tage
+    (
+        11,
+        2,
+        '2025-10-24',
+        '2025-10-28',
+        352.00,
+        'bestätigt',
+        '["Surfboard-Halterung"]',
+        'Nordsee-Trip'
+    ),
+    -- Roller Team Zefiro (ID: 12) - 7 Tage
+    (
+        12,
+        2,
+        '2025-10-06',
+        '2025-10-13',
+        840.00,
+        'angefragt',
+        '["Markise", "Campingmöbel"]',
+        'Herbstferien Niedersachsen'
+    ),
+    -- Sunlight Cliff Adventure (ID: 13) - 8 Tage
+    (
+        13,
+        2,
+        '2025-10-14',
+        '2025-10-22',
+        1200.00,
+        'bestätigt',
+        '["Abenteuer-Paket", "Wanderausrüstung"]',
+        'Familienreise ins Sauerland'
+    );
+
+-- Automatische Berechnung der Anzahl Nächte bei neuen Buchungen
+UPDATE buchungen
+SET
+    anzahl_naechte = end_datum - start_datum
+WHERE
+    anzahl_naechte IS NULL;
