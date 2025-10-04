@@ -206,7 +206,18 @@ export function VehicleSearch({ quickbook = true, initialFilters }: VehicleSearc
                 <div className="px-4 mb-8">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {vehicleData.vehicles.map((vehicle) => (
-                            <VehicleCard key={vehicle.id} vehicle={vehicle} />
+                            <VehicleCard 
+                                key={vehicle.id} 
+                                vehicle={vehicle}
+                                travelDates={
+                                    currentFilters?.dateFrom && currentFilters?.dateTo
+                                        ? {
+                                              startDate: currentFilters.dateFrom,
+                                              endDate: currentFilters.dateTo
+                                          }
+                                        : undefined
+                                }
+                            />
                         ))}
                     </div>
                 </div>

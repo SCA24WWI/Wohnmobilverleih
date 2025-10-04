@@ -247,25 +247,6 @@ const VehicleDetailContent: React.FC = () => {
             <Navbar />
             <div className="min-h-screen bg-gray-50 pt-24">
                 <div className="max-w-6xl mx-auto px-4 py-8">
-                    {/* Header */}
-                    <nav className="mb-8">
-                        <ol className="flex items-center space-x-2 text-sm text-gray-500">
-                            <li>
-                                <a href="/" className="hover:text-blue-600">
-                                    Home
-                                </a>
-                            </li>
-                            <li className="before:content-['/'] before:mx-2">
-                                <a href="/wohnmobile" className="hover:text-blue-600">
-                                    Wohnmobile
-                                </a>
-                            </li>
-                            <li className="before:content-['/'] before:mx-2 text-gray-900 font-medium">
-                                {vehicle.name}
-                            </li>
-                        </ol>
-                    </nav>
-
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         {/* Linke Spalte: Bilder und Details */}
                         <div className="lg:col-span-2">

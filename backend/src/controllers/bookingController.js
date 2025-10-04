@@ -151,18 +151,20 @@ class BookingController {
             await client.query('BEGIN');
 
             const {
-                vehicle_id,
-                user_id,
-                start_date,
-                end_date,
-                customer_info,
-                extras = [],
-                discount_code,
-                notes
+                vehicleId,
+                startDate,
+                endDate,
+                customerInfo,
+                selectedExtras = [],
+                selectedInsurance,
+                selectedPayment,
+                totalPrice,
+                nights,
+                subscribeNewsletter
             } = req.body;
 
             // Validierungen
-            if (!vehicle_id || !user_id || !start_date || !end_date) {
+            if (!vehicleId || !startDate || !endDate || !customerInfo) {
                 await client.query('ROLLBACK');
                 return res.status(400).json({
                     error: 'Alle Pflichtfelder müssen ausgefüllt werden',
@@ -170,8 +172,20 @@ class BookingController {
                 });
             }
 
+            // Überprüfe ob alle Kundendaten vorhanden sind
+            const requiredFields = ['vorname', 'nachname', 'email', 'telefon'];
+            for (let field of requiredFields) {
+                if (!customerInfo[field]) {
+                    await client.query('ROLLBACK');
+                    return res.status(400).json({
+                        error: `Kundeninformation '${field}' fehlt`,
+                        code: 'MISSING_CUSTOMER_INFO'
+                    });
+                }
+            }
+
             // Verfügbarkeit final prüfen
-            const conflicts = await BookingController.findConflicts(vehicle_id, start_date, end_date);
+            const conflicts = await BookingController.findConflicts(vehicleId, startDate, endDate);
             if (conflicts.length > 0) {
                 await client.query('ROLLBACK');
                 return res.status(409).json({
@@ -181,20 +195,69 @@ class BookingController {
                 });
             }
 
-            // Preisberechnung
-            const pricing = await BookingController.calculatePricing(vehicle_id, start_date, end_date);
-            const nights = BookingController.calculateNights(start_date, end_date);
+            // Erst Kunde erstellen oder finden
+            let kunde_id;
 
-            // Buchung erstellen (vereinfachte Struktur)
+            // Prüfen ob Kunde bereits existiert (basierend auf E-Mail)
+            const existingCustomer = await client.query('SELECT id FROM benutzer WHERE email = $1', [
+                customerInfo.email
+            ]);
+
+            if (existingCustomer.rows.length > 0) {
+                // Kunde existiert bereits
+                kunde_id = existingCustomer.rows[0].id;
+            } else {
+                // Neuen Kunden anlegen (nur mit verfügbaren Feldern)
+                // Temporäres Passwort für Buchungs-Kunden
+                const tempPassword = 'temp_booking_' + Date.now();
+
+                const newCustomer = await client.query(
+                    `INSERT INTO benutzer (
+                        vorname, nachname, email, passwort_hash, rolle, erstellt_am
+                    ) VALUES ($1, $2, $3, $4, 'kunde', NOW())
+                    RETURNING id`,
+                    [
+                        customerInfo.vorname,
+                        customerInfo.nachname,
+                        customerInfo.email,
+                        tempPassword // Wird später durch echtes Passwort ersetzt wenn Kunde sich registriert
+                    ]
+                );
+                kunde_id = newCustomer.rows[0].id;
+            } // Extras mit Versicherung, Zahlungsmethode und Kundendaten kombinieren
+            const combinedExtras = {
+                extras: selectedExtras,
+                versicherung: selectedInsurance,
+                zahlungsmethode: selectedPayment,
+                newsletter: subscribeNewsletter,
+                customerDetails: {
+                    telefon: customerInfo.telefon,
+                    adresse: customerInfo.adresse,
+                    plz: customerInfo.plz,
+                    ort: customerInfo.ort,
+                    geburtsdatum: customerInfo.geburtsdatum,
+                    fuehrerschein_nummer: customerInfo.fuehrerschein_nummer
+                }
+            };
+
+            // Buchung erstellen
             const bookingResult = await client.query(
                 `
                 INSERT INTO buchungen (
                     wohnmobil_id, kunde_id, start_datum, end_datum, 
-                    anzahl_naechte, gesamtpreis, extras, notizen, status
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'angefragt')
+                    anzahl_naechte, gesamtpreis, extras, status, gebucht_am
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, 'angefragt', NOW())
                 RETURNING *
             `,
-                [vehicle_id, user_id, start_date, end_date, nights, pricing.total_price, JSON.stringify(extras), notes]
+                [
+                    vehicleId,
+                    kunde_id,
+                    startDate,
+                    endDate,
+                    nights || BookingController.calculateNights(startDate, endDate),
+                    totalPrice,
+                    JSON.stringify(combinedExtras)
+                ]
             );
 
             const booking = bookingResult.rows[0];
@@ -217,9 +280,10 @@ class BookingController {
             await client.query('COMMIT');
 
             const response = {
+                id: booking.id,
+                buchungs_id: booking.id, // Für Kompatibilität
                 ...detailsResult.rows[0],
-                pricing: pricing,
-                customer_info: customer_info || null,
+                customer_info: customerInfo,
                 success: true,
                 message: 'Buchung erfolgreich erstellt'
             };

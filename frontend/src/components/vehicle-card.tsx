@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useToast } from './toast-provider';
 
 // Vehicle Interface
 interface Vehicle {
@@ -19,9 +20,25 @@ interface Vehicle {
 
 interface VehicleCardProps {
     vehicle: Vehicle;
+    travelDates?: {
+        startDate: string;
+        endDate: string;
+    };
 }
 
-export function VehicleCard({ vehicle }: VehicleCardProps) {
+export function VehicleCard({ vehicle, travelDates }: VehicleCardProps) {
+    const { showWarning } = useToast();
+
+    const handleBookingClick = (e: React.MouseEvent) => {
+        if (!travelDates?.startDate || !travelDates?.endDate) {
+            e.preventDefault();
+            showWarning(
+                '📅 Reisedatum erforderlich',
+                'Bitte geben Sie zunächst in der Suchleiste ein Start- und Enddatum für Ihre Reise ein.'
+            );
+            return;
+        }
+    };
     return (
         <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
             <div className="relative">
@@ -77,7 +94,12 @@ export function VehicleCard({ vehicle }: VehicleCardProps) {
 
                 <div className="flex gap-3">
                     <a
-                        href={`/buchung/${vehicle.id}`}
+                        href={
+                            vehicle.available && travelDates?.startDate && travelDates?.endDate
+                                ? `/buchung/${vehicle.id}?startDate=${travelDates.startDate}&endDate=${travelDates.endDate}`
+                                : '#'
+                        }
+                        onClick={handleBookingClick}
                         className={`flex-1 py-2 px-4 rounded-lg font-semibold transition-colors text-center ${
                             vehicle.available
                                 ? 'bg-green-600 hover:bg-green-700 text-white'

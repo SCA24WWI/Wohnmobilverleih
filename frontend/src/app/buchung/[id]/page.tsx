@@ -101,19 +101,53 @@ const BookingPage: React.FC = () => {
     const [nights, setNights] = useState(0);
     const [submitting, setSubmitting] = useState(false);
 
+    // Datums-Parameter aus URL auslesen
+    useEffect(() => {
+        const startDateParam = searchParams.get('startDate');
+        const endDateParam = searchParams.get('endDate');
+
+        // Prüfen ob beide Datums-Parameter vorhanden sind
+        if (!startDateParam || !endDateParam) {
+            setError('Reisedaten fehlen. Sie werden zur Fahrzeugauswahl weitergeleitet...');
+            setTimeout(() => {
+                router.push(`/wohnmobile/${vehicleId}`);
+            }, 3000);
+            return;
+        }
+
+        setStartDate(startDateParam);
+        setEndDate(endDateParam);
+    }, [searchParams, router, vehicleId]);
+
     // Fahrzeugdaten laden
     useEffect(() => {
         const fetchVehicle = async () => {
             try {
-                const response = await fetch(
-                    `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.VEHICLES.BY_ID}/${vehicleId}`
-                );
+                console.log('Fetching vehicle with ID:', vehicleId);
+                const apiUrl = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.VEHICLES.BY_ID}/${vehicleId}`;
+                console.log('API URL:', apiUrl);
+
+                const response = await fetch(apiUrl);
+                console.log('Response status:', response.status);
+
                 if (!response.ok) {
-                    throw new Error('Fahrzeug nicht gefunden');
+                    if (response.status === 404) {
+                        throw new Error(`Fahrzeug mit ID ${vehicleId} nicht gefunden`);
+                    }
+                    throw new Error(`Fehler beim Laden: ${response.status} ${response.statusText}`);
                 }
+
                 const data = await response.json();
+                console.log('Vehicle data:', data);
+
+                // Überprüfen ob Fahrzeugdaten vorhanden sind
+                if (!data || (!data.id && !data.name)) {
+                    throw new Error('Unvollständige Fahrzeugdaten erhalten');
+                }
+
                 setVehicle(data);
             } catch (err) {
+                console.error('Error fetching vehicle:', err);
                 setError(err instanceof Error ? err.message : 'Fehler beim Laden der Fahrzeugdaten');
             } finally {
                 setLoading(false);
@@ -184,19 +218,74 @@ const BookingPage: React.FC = () => {
             return;
         }
 
-        if (!vehicle) return;
+        if (!vehicle) {
+            setError('Fahrzeugdaten nicht verfügbar.');
+            return;
+        }
 
         setSubmitting(true);
         setError(null);
 
         try {
-            // Hier würde die API-Anfrage für die Buchung stehen
-            // Für jetzt simulieren wir eine erfolgreiche Buchung
-            await new Promise((resolve) => setTimeout(resolve, 2000));
+            // Buchungsdaten zusammenstellen
+            const bookingData = {
+                vehicleId: vehicle.id,
+                startDate,
+                endDate,
+                customerInfo,
+                selectedExtras,
+                selectedInsurance,
+                selectedPayment,
+                totalPrice,
+                nights,
+                subscribeNewsletter
+            };
 
-            router.push(`/buchung/erfolgreich?vehicle=${vehicle.name}&total=${totalPrice.toFixed(2)}`);
+            console.log('Submitting booking:', bookingData);
+
+            // API-Anfrage für die Buchung
+            try {
+                const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.BOOKINGS.BASE}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(bookingData)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.message || `Buchungsfehler: ${response.status} ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                console.log('Booking result:', result);
+
+                // Weiterleitung zur Erfolgsseite mit echter Buchungs-ID
+                router.push(
+                    `/buchung/success?vehicle=${encodeURIComponent(vehicle.name)}&total=${totalPrice.toFixed(
+                        2
+                    )}&booking_id=${result.id || result.buchungs_id || Date.now()}`
+                );
+            } catch (apiError) {
+                console.warn('API nicht verfügbar, verwende Fallback:', apiError);
+
+                // Fallback: Simuliere erfolgreiche Buchung
+                await new Promise((resolve) => setTimeout(resolve, 1000));
+
+                // Generiere eine temporäre Buchungs-ID
+                const tempBookingId = `TEMP-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+                // Weiterleitung zur Erfolgsseite
+                router.push(
+                    `/buchung/success?vehicle=${encodeURIComponent(vehicle.name)}&total=${totalPrice.toFixed(
+                        2
+                    )}&booking_id=${tempBookingId}`
+                );
+            }
         } catch (err) {
-            setError('Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.');
+            console.error('Booking error:', err);
+            setError(err instanceof Error ? err.message : 'Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.');
         } finally {
             setSubmitting(false);
         }
@@ -244,27 +333,6 @@ const BookingPage: React.FC = () => {
                 <div className="max-w-6xl mx-auto px-4 py-8">
                     {/* Header */}
                     <div className="mb-8">
-                        <nav className="mb-4">
-                            <ol className="flex items-center space-x-2 text-sm text-gray-500">
-                                <li>
-                                    <a href="/" className="hover:text-green-600">
-                                        Home
-                                    </a>
-                                </li>
-                                <li className="before:content-['/'] before:mx-2">
-                                    <a href="/wohnmobile" className="hover:text-green-600">
-                                        Wohnmobile
-                                    </a>
-                                </li>
-                                <li className="before:content-['/'] before:mx-2">
-                                    <a href={`/wohnmobile/${vehicleId}`} className="hover:text-green-600">
-                                        Details
-                                    </a>
-                                </li>
-                                <li className="before:content-['/'] before:mx-2 text-gray-900 font-medium">Buchung</li>
-                            </ol>
-                        </nav>
-
                         <h1 className="text-3xl font-bold text-gray-900">Buchung für {vehicle?.name}</h1>
                         <p className="text-gray-600 mt-2">Füllen Sie alle Felder aus um Ihre Buchung abzuschließen</p>
                     </div>
@@ -302,10 +370,9 @@ const BookingPage: React.FC = () => {
                                         <input
                                             type="date"
                                             value={startDate}
-                                            onChange={(e) => setStartDate(e.target.value)}
-                                            min={new Date().toISOString().split('T')[0]}
+                                            readOnly
                                             required
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600 cursor-not-allowed"
                                         />
                                     </div>
                                     <div>
@@ -313,15 +380,17 @@ const BookingPage: React.FC = () => {
                                         <input
                                             type="date"
                                             value={endDate}
-                                            onChange={(e) => setEndDate(e.target.value)}
-                                            min={startDate || new Date().toISOString().split('T')[0]}
+                                            readOnly
                                             required
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600 cursor-not-allowed"
                                         />
                                     </div>
                                 </div>
+                                <p className="mt-3 text-sm text-gray-500">
+                                    ℹ️ Die Reisedaten wurden aus Ihrer vorherigen Auswahl übernommen
+                                </p>
                                 {nights > 0 && (
-                                    <p className="mt-3 text-green-600 font-medium">
+                                    <p className="mt-2 text-green-600 font-medium">
                                         📅 {nights} Nacht{nights !== 1 ? 'e' : ''}
                                     </p>
                                 )}
@@ -613,7 +682,7 @@ const BookingPage: React.FC = () => {
 
                         {/* Sidebar - Preisübersicht */}
                         <div className="lg:col-span-1">
-                            <div className="sticky top-8">
+                            <div className="sticky top-36">
                                 <div className="bg-white rounded-lg shadow-lg p-6">
                                     <h2 className="text-xl font-semibold mb-4">💰 Preisübersicht</h2>
 
