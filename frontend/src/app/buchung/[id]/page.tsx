@@ -5,6 +5,7 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { Navbar, Footer } from '@/components';
 import { API_CONFIG, buildApiUrl } from '@/config/api';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Interface für Wohnmobil-Daten
 interface Vehicle {
@@ -71,6 +72,7 @@ const BookingPage: React.FC = () => {
     const params = useParams();
     const router = useRouter();
     const searchParams = useSearchParams();
+    const { user, loading: authLoading } = useAuth();
     const vehicleId = params.id as string;
     const [vehicle, setVehicle] = useState<Vehicle | null>(null);
     const [loading, setLoading] = useState(true);
@@ -91,6 +93,18 @@ const BookingPage: React.FC = () => {
         fuehrerschein_nummer: ''
     });
 
+    // Kundendaten automatisch ausfüllen wenn Benutzer angemeldet ist
+    useEffect(() => {
+        if (user) {
+            setCustomerInfo((prev) => ({
+                ...prev,
+                vorname: user.vorname || '',
+                nachname: user.nachname || '',
+                email: user.email || ''
+            }));
+        }
+    }, [user]);
+
     const [selectedExtras, setSelectedExtras] = useState<string[]>([]);
     const [selectedInsurance, setSelectedInsurance] = useState<string>('basic');
     const [selectedPayment, setSelectedPayment] = useState<string>('kreditkarte');
@@ -101,8 +115,20 @@ const BookingPage: React.FC = () => {
     const [nights, setNights] = useState(0);
     const [submitting, setSubmitting] = useState(false);
 
+    // Authentifizierungsprüfung
+    useEffect(() => {
+        if (!authLoading && !user) {
+            // Benutzer ist nicht angemeldet, weiterleiten zur Anmeldeseite
+            const currentUrl = window.location.pathname + window.location.search;
+            router.push(`/auth?backUrl=${encodeURIComponent(currentUrl)}`);
+        }
+    }, [authLoading, user, router]);
+
     // Datums-Parameter aus URL auslesen
     useEffect(() => {
+        // Nur ausführen wenn Benutzer angemeldet ist
+        if (!user) return;
+
         const startDateParam = searchParams.get('startDate');
         const endDateParam = searchParams.get('endDate');
 
@@ -117,10 +143,13 @@ const BookingPage: React.FC = () => {
 
         setStartDate(startDateParam);
         setEndDate(endDateParam);
-    }, [searchParams, router, vehicleId]);
+    }, [searchParams, router, vehicleId, user]);
 
     // Fahrzeugdaten laden
     useEffect(() => {
+        // Nur ausführen wenn Benutzer angemeldet ist
+        if (!user) return;
+
         const fetchVehicle = async () => {
             try {
                 console.log('Fetching vehicle with ID:', vehicleId);
@@ -157,7 +186,7 @@ const BookingPage: React.FC = () => {
         if (vehicleId) {
             fetchVehicle();
         }
-    }, [vehicleId]);
+    }, [vehicleId, user]);
 
     // Preisberechnung
     useEffect(() => {
@@ -291,19 +320,26 @@ const BookingPage: React.FC = () => {
         }
     };
 
-    if (loading) {
+    if (authLoading || loading) {
         return (
             <>
                 <Navbar />
                 <div className="min-h-screen bg-gray-50 pt-24 flex items-center justify-center">
                     <div className="text-center">
                         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-600 mx-auto"></div>
-                        <p className="mt-4 text-gray-600">Lade Fahrzeugdaten...</p>
+                        <p className="mt-4 text-gray-600">
+                            {authLoading ? 'Überprüfe Anmeldung...' : 'Lade Fahrzeugdaten...'}
+                        </p>
                     </div>
                 </div>
                 <Footer />
             </>
         );
+    }
+
+    // Wenn nicht angemeldet, wird bereits durch useEffect weitergeleitet
+    if (!user) {
+        return null;
     }
 
     if (error && !vehicle) {

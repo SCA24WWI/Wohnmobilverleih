@@ -1,9 +1,9 @@
 'use client';
 
 import { Navbar, Footer } from '@/components';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function AuthPage() {
     const [isLogin, setIsLogin] = useState(true);
@@ -20,12 +20,22 @@ export default function AuthPage() {
         agbAccepted: false
     });
 
-    const { login, register } = useAuth();
+    const { login, register, user } = useAuth();
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const backUrl = searchParams.get('backUrl');
+
+    // Redirect bereits angemeldete Benutzer
+    useEffect(() => {
+        if (user) {
+            const redirectUrl = backUrl || '/';
+            router.push(redirectUrl);
+        }
+    }, [user, router, backUrl]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
-        setFormData(prev => ({
+        setFormData((prev) => ({
             ...prev,
             [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
         }));
@@ -41,7 +51,8 @@ export default function AuthPage() {
                 // Anmeldung
                 const success = await login(formData.email, formData.passwort, formData.rememberMe);
                 if (success) {
-                    router.push('/');
+                    const redirectUrl = backUrl || '/';
+                    router.push(redirectUrl);
                 } else {
                     setError('Anmeldung fehlgeschlagen. Bitte prüfen Sie Ihre Eingaben.');
                 }
@@ -66,7 +77,8 @@ export default function AuthPage() {
                 });
 
                 if (success) {
-                    router.push('/');
+                    const redirectUrl = backUrl || '/';
+                    router.push(redirectUrl);
                 } else {
                     setError('Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut.');
                 }
@@ -113,6 +125,15 @@ export default function AuthPage() {
                         <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">
                             {isLogin ? 'Anmelden' : 'Registrieren'}
                         </h1>
+
+                        {backUrl && (
+                            <div className="mb-6 p-4 bg-blue-100 border border-blue-400 text-blue-700 rounded-md">
+                                <p className="text-sm">
+                                    Um ein Wohnmobil zu buchen, müssen Sie sich zuerst anmelden. Nach der erfolgreichen
+                                    Anmeldung können Sie Ihre Buchung fortsetzen.
+                                </p>
+                            </div>
+                        )}
 
                         {error && (
                             <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-md">
@@ -198,7 +219,7 @@ export default function AuthPage() {
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">Rolle</label>
-                                        <select 
+                                        <select
                                             name="rolle"
                                             value={formData.rolle}
                                             onChange={handleInputChange}
@@ -262,7 +283,7 @@ export default function AuthPage() {
                                 disabled={loading}
                                 className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-medium py-3 px-4 rounded-md transition-colors duration-300"
                             >
-                                {loading ? 'Bitte warten...' : (isLogin ? 'Anmelden' : 'Registrieren')}
+                                {loading ? 'Bitte warten...' : isLogin ? 'Anmelden' : 'Registrieren'}
                             </button>
 
                             {/* Social Media Buttons - nur bei Anmeldung */}
