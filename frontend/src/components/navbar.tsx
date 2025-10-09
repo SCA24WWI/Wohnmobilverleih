@@ -90,7 +90,7 @@ export function Navbar({ transparent = false }: NavbarProps) {
                             <div className="px-2 py-1 text-sm text-gray-600">Hallo, {user.vorname}!</div>
                         </MenuItem>
                         <MenuItem>
-                            <a href="/bookings" className="w-full">
+                            <a href="/my-bookings" className="w-full">
                                 Meine Buchungen
                             </a>
                         </MenuItem>

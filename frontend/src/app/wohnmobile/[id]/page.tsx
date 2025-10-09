@@ -101,7 +101,7 @@ const VehicleDetailContent: React.FC = () => {
                             });
                         }
                     } catch (parseError) {
-                        console.warn('Fehler beim Parsen der Galerie-Bilder:', parseError);
+
                     }
                 }
 
@@ -151,14 +151,14 @@ const VehicleDetailContent: React.FC = () => {
             );
 
             if (!response.ok) {
-                console.warn('Verfügbarkeitsprüfung fehlgeschlagen');
+
                 return true;
             }
 
             const result = await response.json();
             return result.available;
         } catch (err) {
-            console.error('Fehler bei der Verfügbarkeitsprüfung:', err);
+
             return true;
         }
     };

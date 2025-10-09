@@ -15,6 +15,11 @@ export default function AuthPage() {
         passwortBestaetigen: '',
         vorname: '',
         nachname: '',
+        telefon: '',
+        adresse: '',
+        plz: '',
+        ort: '',
+        geburtsdatum: '',
         rolle: '',
         rememberMe: false,
         agbAccepted: false
@@ -73,6 +78,11 @@ export default function AuthPage() {
                     passwort: formData.passwort,
                     vorname: formData.vorname,
                     nachname: formData.nachname,
+                    telefon: formData.telefon,
+                    adresse: formData.adresse,
+                    plz: formData.plz,
+                    ort: formData.ort,
+                    geburtsdatum: formData.geburtsdatum,
                     rolle: formData.rolle as 'kunde' | 'anbieter'
                 });
 
@@ -142,34 +152,126 @@ export default function AuthPage() {
                         )}
 
                         <form onSubmit={handleSubmit} className="space-y-6">
-                            {/* Registrierung - Name Felder */}
+                            {/* Registrierung - Persönliche Daten */}
                             {!isLogin && (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Vorname</label>
-                                        <input
-                                            type="text"
-                                            name="vorname"
-                                            value={formData.vorname}
-                                            onChange={handleInputChange}
-                                            required={!isLogin}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                                            placeholder="Vorname"
-                                        />
+                                <>
+                                    {/* Grunddaten */}
+                                    <div className="space-y-4">
+                                        <h3 className="text-lg font-medium text-gray-800 border-b pb-2">Grunddaten</h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                    Vorname *
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    name="vorname"
+                                                    value={formData.vorname}
+                                                    onChange={handleInputChange}
+                                                    required={!isLogin}
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                                    placeholder="Vorname"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                    Nachname *
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    name="nachname"
+                                                    value={formData.nachname}
+                                                    onChange={handleInputChange}
+                                                    required={!isLogin}
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                                    placeholder="Nachname"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                    Telefon *
+                                                </label>
+                                                <input
+                                                    type="tel"
+                                                    name="telefon"
+                                                    value={formData.telefon}
+                                                    onChange={handleInputChange}
+                                                    required={!isLogin}
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                                    placeholder="+49 123 456789"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                    Geburtsdatum *
+                                                </label>
+                                                <input
+                                                    type="date"
+                                                    name="geburtsdatum"
+                                                    value={formData.geburtsdatum}
+                                                    onChange={handleInputChange}
+                                                    required={!isLogin}
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Nachname</label>
-                                        <input
-                                            type="text"
-                                            name="nachname"
-                                            value={formData.nachname}
-                                            onChange={handleInputChange}
-                                            required={!isLogin}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                                            placeholder="Nachname"
-                                        />
+
+                                    {/* Adressdaten */}
+                                    <div className="space-y-4">
+                                        <h3 className="text-lg font-medium text-gray-800 border-b pb-2">Adresse</h3>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                Straße und Hausnummer *
+                                            </label>
+                                            <input
+                                                type="text"
+                                                name="adresse"
+                                                value={formData.adresse}
+                                                onChange={handleInputChange}
+                                                required={!isLogin}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                                placeholder="Musterstraße 123"
+                                            />
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                    PLZ *
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    name="plz"
+                                                    value={formData.plz}
+                                                    onChange={handleInputChange}
+                                                    required={!isLogin}
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                                    placeholder="12345"
+                                                    pattern="[0-9]{5}"
+                                                    maxLength={5}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                    Ort *
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    name="ort"
+                                                    value={formData.ort}
+                                                    onChange={handleInputChange}
+                                                    required={!isLogin}
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                                    placeholder="Musterstadt"
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
+                                </>
                             )}
 
                             {/* E-Mail Feld */}

@@ -72,7 +72,7 @@ const BookingPage: React.FC = () => {
     const params = useParams();
     const router = useRouter();
     const searchParams = useSearchParams();
-    const { user, loading: authLoading } = useAuth();
+    const { user, token, loading: authLoading } = useAuth();
     const vehicleId = params.id as string;
     const [vehicle, setVehicle] = useState<Vehicle | null>(null);
     const [loading, setLoading] = useState(true);
@@ -84,7 +84,7 @@ const BookingPage: React.FC = () => {
     const [customerInfo, setCustomerInfo] = useState({
         vorname: '',
         nachname: '',
-        email: '',
+        rechnungs_email: '',
         telefon: '',
         adresse: '',
         plz: '',
@@ -100,7 +100,12 @@ const BookingPage: React.FC = () => {
                 ...prev,
                 vorname: user.vorname || '',
                 nachname: user.nachname || '',
-                email: user.email || ''
+                rechnungs_email: user.email || '',
+                telefon: user.telefon || '',
+                adresse: user.adresse || '',
+                plz: user.plz || '',
+                ort: user.ort || '',
+                geburtsdatum: user.geburtsdatum || ''
             }));
         }
     }, [user]);
@@ -109,7 +114,6 @@ const BookingPage: React.FC = () => {
     const [selectedInsurance, setSelectedInsurance] = useState<string>('basic');
     const [selectedPayment, setSelectedPayment] = useState<string>('kreditkarte');
     const [agreeToTerms, setAgreeToTerms] = useState(false);
-    const [subscribeNewsletter, setSubscribeNewsletter] = useState(false);
 
     const [totalPrice, setTotalPrice] = useState(0);
     const [nights, setNights] = useState(0);
@@ -152,12 +156,8 @@ const BookingPage: React.FC = () => {
 
         const fetchVehicle = async () => {
             try {
-                console.log('Fetching vehicle with ID:', vehicleId);
                 const apiUrl = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.VEHICLES.BY_ID}/${vehicleId}`;
-                console.log('API URL:', apiUrl);
-
                 const response = await fetch(apiUrl);
-                console.log('Response status:', response.status);
 
                 if (!response.ok) {
                     if (response.status === 404) {
@@ -167,7 +167,6 @@ const BookingPage: React.FC = () => {
                 }
 
                 const data = await response.json();
-                console.log('Vehicle data:', data);
 
                 // Überprüfen ob Fahrzeugdaten vorhanden sind
                 if (!data || (!data.id && !data.name)) {
@@ -176,7 +175,6 @@ const BookingPage: React.FC = () => {
 
                 setVehicle(data);
             } catch (err) {
-                console.error('Error fetching vehicle:', err);
                 setError(err instanceof Error ? err.message : 'Fehler beim Laden der Fahrzeugdaten');
             } finally {
                 setLoading(false);
@@ -242,6 +240,15 @@ const BookingPage: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
+        // Prüfung: Benutzer muss angemeldet sein
+        if (!user || !token) {
+            setError('Sie müssen angemeldet sein, um eine Buchung vorzunehmen.');
+            // Weiterleitung zur Anmelde-Seite mit Rücksprung-URL
+            const currentUrl = window.location.pathname + window.location.search;
+            router.push(`/auth?backUrl=${encodeURIComponent(currentUrl)}`);
+            return;
+        }
+
         if (!agreeToTerms) {
             setError('Bitte akzeptieren Sie die AGB und Datenschutzerklärung.');
             return;
@@ -256,48 +263,57 @@ const BookingPage: React.FC = () => {
         setError(null);
 
         try {
-            // Buchungsdaten zusammenstellen
+            // Buchungsdaten zusammenstellen (vereinfacht für angemeldete Benutzer)
             const bookingData = {
                 vehicleId: vehicle.id,
                 startDate,
                 endDate,
-                customerInfo,
                 selectedExtras,
                 selectedInsurance,
                 selectedPayment,
                 totalPrice,
                 nights,
-                subscribeNewsletter
+                notes: '' // Optional: Zusätzliche Notizen
             };
 
-            console.log('Submitting booking:', bookingData);
+
 
             // API-Anfrage für die Buchung
             try {
                 const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.BOOKINGS.BASE}`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`
                     },
                     body: JSON.stringify(bookingData)
                 });
 
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => ({}));
-                    throw new Error(errorData.message || `Buchungsfehler: ${response.status} ${response.statusText}`);
+
+                    // Spezielle Behandlung für Authentifizierungsfehler
+                    if (response.status === 401) {
+                        throw new Error('Sie müssen angemeldet sein, um eine Buchung vorzunehmen.');
+                    }
+
+                    throw new Error(
+                        errorData.error ||
+                            errorData.message ||
+                            `Buchungsfehler: ${response.status} ${response.statusText}`
+                    );
                 }
 
                 const result = await response.json();
-                console.log('Booking result:', result);
 
                 // Weiterleitung zur Erfolgsseite mit echter Buchungs-ID
+                const bookingId = result.booking?.id || result.id || result.buchungs_id || Date.now();
                 router.push(
                     `/buchung/success?vehicle=${encodeURIComponent(vehicle.name)}&total=${totalPrice.toFixed(
                         2
-                    )}&booking_id=${result.id || result.buchungs_id || Date.now()}`
+                    )}&booking_id=${bookingId}`
                 );
             } catch (apiError) {
-                console.warn('API nicht verfügbar, verwende Fallback:', apiError);
 
                 // Fallback: Simuliere erfolgreiche Buchung
                 await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -313,7 +329,6 @@ const BookingPage: React.FC = () => {
                 );
             }
         } catch (err) {
-            console.error('Booking error:', err);
             setError(err instanceof Error ? err.message : 'Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.');
         } finally {
             setSubmitting(false);
@@ -372,6 +387,37 @@ const BookingPage: React.FC = () => {
                         <h1 className="text-3xl font-bold text-gray-900">Buchung für {vehicle?.name}</h1>
                         <p className="text-gray-600 mt-2">Füllen Sie alle Felder aus um Ihre Buchung abzuschließen</p>
                     </div>
+
+                    {/* Authentifizierungshinweis */}
+                    {!user && !authLoading && (
+                        <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <div className="flex">
+                                <div className="flex-shrink-0">
+                                    <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                                        <path
+                                            fillRule="evenodd"
+                                            d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                                            clipRule="evenodd"
+                                        />
+                                    </svg>
+                                </div>
+                                <div className="ml-3">
+                                    <h3 className="text-sm font-medium text-yellow-800">Anmeldung erforderlich</h3>
+                                    <p className="mt-1 text-sm text-yellow-700">
+                                        Sie müssen angemeldet sein, um eine Buchung vornehmen zu können.{' '}
+                                        <a
+                                            href={`/auth?backUrl=${encodeURIComponent(
+                                                window.location.pathname + window.location.search
+                                            )}`}
+                                            className="font-medium underline hover:text-yellow-600"
+                                        >
+                                            Jetzt anmelden
+                                        </a>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         {/* Hauptinhalt */}
@@ -435,125 +481,109 @@ const BookingPage: React.FC = () => {
                             {/* Persönliche Daten */}
                             <div className="bg-white rounded-lg shadow-lg p-6">
                                 <h2 className="text-xl font-semibold mb-4">👤 Persönliche Daten</h2>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Vorname *
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={customerInfo.vorname}
-                                            onChange={(e) =>
-                                                setCustomerInfo({ ...customerInfo, vorname: e.target.value })
-                                            }
-                                            required
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                                        />
+                                <div className="space-y-6">
+                                    {/* Info zu vorausgefüllten Daten */}
+                                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                        <p className="text-sm text-blue-700">
+                                            ℹ️ Die Daten aus Ihrem Konto wurden automatisch übernommen. Sie können
+                                            E-Mail und Telefon anpassen und müssen die Führerschein-Nummer ergänzen.
+                                        </p>
                                     </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Nachname *
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={customerInfo.nachname}
-                                            onChange={(e) =>
-                                                setCustomerInfo({ ...customerInfo, nachname: e.target.value })
-                                            }
-                                            required
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">E-Mail *</label>
-                                        <input
-                                            type="email"
-                                            value={customerInfo.email}
-                                            onChange={(e) =>
-                                                setCustomerInfo({ ...customerInfo, email: e.target.value })
-                                            }
-                                            required
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Telefon *
-                                        </label>
-                                        <input
-                                            type="tel"
-                                            value={customerInfo.telefon}
-                                            onChange={(e) =>
-                                                setCustomerInfo({ ...customerInfo, telefon: e.target.value })
-                                            }
-                                            required
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                                        />
-                                    </div>
-                                    <div className="md:col-span-2">
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Adresse *
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={customerInfo.adresse}
-                                            onChange={(e) =>
-                                                setCustomerInfo({ ...customerInfo, adresse: e.target.value })
-                                            }
-                                            required
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">PLZ *</label>
-                                        <input
-                                            type="text"
-                                            value={customerInfo.plz}
-                                            onChange={(e) => setCustomerInfo({ ...customerInfo, plz: e.target.value })}
-                                            required
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Ort *</label>
-                                        <input
-                                            type="text"
-                                            value={customerInfo.ort}
-                                            onChange={(e) => setCustomerInfo({ ...customerInfo, ort: e.target.value })}
-                                            required
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Geburtsdatum *
-                                        </label>
-                                        <input
-                                            type="date"
-                                            value={customerInfo.geburtsdatum}
-                                            onChange={(e) =>
-                                                setCustomerInfo({ ...customerInfo, geburtsdatum: e.target.value })
-                                            }
-                                            required
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Führerschein-Nummer *
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={customerInfo.fuehrerschein_nummer}
-                                            onChange={(e) =>
-                                                setCustomerInfo({
-                                                    ...customerInfo,
-                                                    fuehrerschein_nummer: e.target.value
-                                                })
-                                            }
-                                            required
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                                        />
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {/* Vorname - readonly */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                Vorname
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={customerInfo.vorname}
+                                                readOnly
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600 cursor-not-allowed"
+                                            />
+                                            <p className="text-xs text-gray-500 mt-1">Aus Ihrem Konto übernommen</p>
+                                        </div>
+
+                                        {/* Nachname - readonly */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                Nachname
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={customerInfo.nachname}
+                                                readOnly
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600 cursor-not-allowed"
+                                            />
+                                            <p className="text-xs text-gray-500 mt-1">Aus Ihrem Konto übernommen</p>
+                                        </div>
+
+                                        {/* Rechnungs-E-Mail - editierbar */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                Rechnungs-E-Mail *
+                                            </label>
+                                            <input
+                                                type="email"
+                                                value={customerInfo.rechnungs_email}
+                                                onChange={(e) =>
+                                                    setCustomerInfo({
+                                                        ...customerInfo,
+                                                        rechnungs_email: e.target.value
+                                                    })
+                                                }
+                                                required
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                                            />
+                                            <p className="text-xs text-gray-500 mt-1">
+                                                Rechnung wird an diese E-Mail gesendet
+                                            </p>
+                                        </div>
+
+                                        {/* Telefon - editierbar */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                Telefon *
+                                            </label>
+                                            <input
+                                                type="tel"
+                                                value={customerInfo.telefon}
+                                                onChange={(e) =>
+                                                    setCustomerInfo({
+                                                        ...customerInfo,
+                                                        telefon: e.target.value
+                                                    })
+                                                }
+                                                required
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                                                placeholder="+49 123 456789"
+                                            />
+                                            <p className="text-xs text-gray-500 mt-1">Für Rückfragen zur Buchung</p>
+                                        </div>
+
+                                        {/* Führerschein-Nummer - editierbar */}
+                                        <div className="md:col-span-2">
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                Führerschein-Nummer *
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={customerInfo.fuehrerschein_nummer}
+                                                onChange={(e) =>
+                                                    setCustomerInfo({
+                                                        ...customerInfo,
+                                                        fuehrerschein_nummer: e.target.value
+                                                    })
+                                                }
+                                                placeholder="Bitte geben Sie Ihre Führerschein-Nummer ein"
+                                                required
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                                            />
+                                            <p className="text-xs text-gray-500 mt-1">
+                                                Erforderlich für die Fahrzeugübergabe
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -675,45 +705,6 @@ const BookingPage: React.FC = () => {
                                     ))}
                                 </div>
                             </div>
-
-                            {/* AGB & Newsletter */}
-                            <div className="bg-white rounded-lg shadow-lg p-6">
-                                <div className="space-y-4">
-                                    <label className="flex items-start space-x-3 cursor-pointer">
-                                        <input
-                                            type="checkbox"
-                                            checked={agreeToTerms}
-                                            onChange={(e) => setAgreeToTerms(e.target.checked)}
-                                            required
-                                            className="mt-1 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-                                        />
-                                        <div className="text-sm text-gray-700">
-                                            Ich akzeptiere die{' '}
-                                            <a href="/agb" className="text-green-600 hover:underline">
-                                                Allgemeinen Geschäftsbedingungen
-                                            </a>{' '}
-                                            und die{' '}
-                                            <a href="/datenschutz" className="text-green-600 hover:underline">
-                                                Datenschutzerklärung
-                                            </a>{' '}
-                                            *
-                                        </div>
-                                    </label>
-
-                                    <label className="flex items-start space-x-3 cursor-pointer">
-                                        <input
-                                            type="checkbox"
-                                            checked={subscribeNewsletter}
-                                            onChange={(e) => setSubscribeNewsletter(e.target.checked)}
-                                            className="mt-1 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-                                        />
-                                        <div className="text-sm text-gray-700">
-                                            Ja, ich möchte den Newsletter mit Angeboten und News erhalten (jederzeit
-                                            abmeldbar)
-                                        </div>
-                                    </label>
-                                </div>
-                            </div>
                         </div>
 
                         {/* Sidebar - Preisübersicht */}
@@ -794,7 +785,6 @@ const BookingPage: React.FC = () => {
                                                 <span>Gesamtpreis</span>
                                                 <span className="text-green-600">€{totalPrice.toFixed(2)}</span>
                                             </div>
-
                                             <button
                                                 type="submit"
                                                 disabled={submitting || !agreeToTerms}
@@ -820,6 +810,29 @@ const BookingPage: React.FC = () => {
                                             {error}
                                         </div>
                                     )}
+                                </div>
+                                {/* AGB */}
+                                <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                                    <label className="flex items-start space-x-3 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={agreeToTerms}
+                                            onChange={(e) => setAgreeToTerms(e.target.checked)}
+                                            required
+                                            className="mt-1 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                                        />
+                                        <div className="text-sm text-gray-700">
+                                            Ich akzeptiere die{' '}
+                                            <a href="/agb" className="text-green-600 hover:underline">
+                                                AGB
+                                            </a>{' '}
+                                            und die{' '}
+                                            <a href="/datenschutz" className="text-green-600 hover:underline">
+                                                Datenschutzerklärung
+                                            </a>{' '}
+                                            *
+                                        </div>
+                                    </label>
                                 </div>
                             </div>
                         </div>

@@ -28,7 +28,7 @@ CREATE TABLE
             TIME ZONE DEFAULT NOW ()
     );
 
--- ZENTRALE BUCHUNGSTABELLE für alle Buchungen (vergangen, aktuell, zukünftig)
+-- ZENTRALE BUCHUNGSTABELLE für alle Buchungen
 CREATE TABLE
     IF NOT EXISTS buchungen (
         id SERIAL PRIMARY KEY,

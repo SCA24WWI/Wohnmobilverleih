@@ -116,8 +116,7 @@ async function fetchVehicles(filters?: SearchFilters, page: number = 1): Promise
                         galleryImages = JSON.parse(vehicle.galerie_bilder);
                     }
                 } catch (parseError) {
-                    console.warn(`Fehler beim Parsen der Galerie-Bilder für Fahrzeug ${vehicle.name}:`, parseError);
-                    console.warn('Rohdaten:', vehicle.galerie_bilder);
+
                     galleryImages = [];
                 }
             }
@@ -143,7 +142,7 @@ async function fetchVehicles(filters?: SearchFilters, page: number = 1): Promise
             pagination: apiData.pagination
         };
     } catch (error) {
-        console.error('Error fetching vehicles:', error);
+
         throw error;
     }
 }
@@ -213,7 +212,7 @@ export function SearchBar({ quickbook = true, onSearch, onSearchResults, initial
     // useEffect um initialFilters zu laden
     React.useEffect(() => {
         if (initialFilters && Object.keys(initialFilters).length > 0) {
-            console.log('Loading initial filters in SearchBar:', initialFilters);
+
             setFormData((prev) => ({
                 ...prev,
                 location: initialFilters.location || prev.location,
@@ -252,7 +251,7 @@ export function SearchBar({ quickbook = true, onSearch, onSearchResults, initial
             onSearchResults &&
             !hasInitialized.current
         ) {
-            console.log('Auto-searching with initial filters:', initialFilters);
+
             hasInitialized.current = true;
             handleSearch(initialFilters, 1);
         }
@@ -282,7 +281,7 @@ export function SearchBar({ quickbook = true, onSearch, onSearchResults, initial
             } catch (err) {
                 const error = 'Fehler bei der Suche. Bitte versuchen Sie es erneut.';
                 setSearchError(error);
-                console.error('Error searching vehicles:', err);
+
 
                 // Fehler an Parent-Komponente weiterleiten
                 if (onSearchResults) {

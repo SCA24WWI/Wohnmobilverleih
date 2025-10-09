@@ -150,38 +150,47 @@ class BookingController {
         try {
             await client.query('BEGIN');
 
+            // Nur angemeldete Benutzer können buchen
+            const kunde_id = req.user?.id;
+            if (!kunde_id) {
+                await client.query('ROLLBACK');
+                return res.status(401).json({
+                    error: 'Sie müssen angemeldet sein, um eine Buchung vorzunehmen',
+                    code: 'NOT_AUTHENTICATED'
+                });
+            }
+
             const {
                 vehicleId,
                 startDate,
                 endDate,
-                customerInfo,
                 selectedExtras = [],
                 selectedInsurance,
                 selectedPayment,
                 totalPrice,
                 nights,
-                subscribeNewsletter
+                notes
             } = req.body;
 
             // Validierungen
-            if (!vehicleId || !startDate || !endDate || !customerInfo) {
+            if (!vehicleId || !startDate || !endDate) {
                 await client.query('ROLLBACK');
                 return res.status(400).json({
-                    error: 'Alle Pflichtfelder müssen ausgefüllt werden',
+                    error: 'vehicleId, startDate und endDate sind erforderlich',
                     code: 'MISSING_REQUIRED_FIELDS'
                 });
             }
 
-            // Überprüfe ob alle Kundendaten vorhanden sind
-            const requiredFields = ['vorname', 'nachname', 'email', 'telefon'];
-            for (let field of requiredFields) {
-                if (!customerInfo[field]) {
-                    await client.query('ROLLBACK');
-                    return res.status(400).json({
-                        error: `Kundeninformation '${field}' fehlt`,
-                        code: 'MISSING_CUSTOMER_INFO'
-                    });
-                }
+            // Benutzer existiert prüfen
+            const userCheck = await client.query('SELECT id, vorname, nachname, email FROM benutzer WHERE id = $1', [
+                kunde_id
+            ]);
+            if (userCheck.rows.length === 0) {
+                await client.query('ROLLBACK');
+                return res.status(404).json({
+                    error: 'Benutzer nicht gefunden',
+                    code: 'USER_NOT_FOUND'
+                });
             }
 
             // Verfügbarkeit final prüfen
@@ -195,100 +204,56 @@ class BookingController {
                 });
             }
 
-            // Erst Kunde erstellen oder finden
-            let kunde_id;
-
-            // Prüfen ob Kunde bereits existiert (basierend auf E-Mail)
-            const existingCustomer = await client.query('SELECT id FROM benutzer WHERE email = $1', [
-                customerInfo.email
-            ]);
-
-            if (existingCustomer.rows.length > 0) {
-                // Kunde existiert bereits
-                kunde_id = existingCustomer.rows[0].id;
-            } else {
-                // Neuen Kunden anlegen (nur mit verfügbaren Feldern)
-                // Temporäres Passwort für Buchungs-Kunden
-                const tempPassword = 'temp_booking_' + Date.now();
-
-                const newCustomer = await client.query(
-                    `INSERT INTO benutzer (
-                        vorname, nachname, email, passwort_hash, rolle, erstellt_am
-                    ) VALUES ($1, $2, $3, $4, 'kunde', NOW())
-                    RETURNING id`,
-                    [
-                        customerInfo.vorname,
-                        customerInfo.nachname,
-                        customerInfo.email,
-                        tempPassword // Wird später durch echtes Passwort ersetzt wenn Kunde sich registriert
-                    ]
-                );
-                kunde_id = newCustomer.rows[0].id;
-            } // Extras mit Versicherung, Zahlungsmethode und Kundendaten kombinieren
+            // Extras-Daten zusammenfassen
             const combinedExtras = {
                 extras: selectedExtras,
                 versicherung: selectedInsurance,
-                zahlungsmethode: selectedPayment,
-                newsletter: subscribeNewsletter,
-                customerDetails: {
-                    telefon: customerInfo.telefon,
-                    adresse: customerInfo.adresse,
-                    plz: customerInfo.plz,
-                    ort: customerInfo.ort,
-                    geburtsdatum: customerInfo.geburtsdatum,
-                    fuehrerschein_nummer: customerInfo.fuehrerschein_nummer
-                }
+                zahlungsmethode: selectedPayment
             };
+
+            const calculatedNights = nights || BookingController.calculateNights(startDate, endDate);
 
             // Buchung erstellen
             const bookingResult = await client.query(
-                `
-                INSERT INTO buchungen (
+                `INSERT INTO buchungen (
                     wohnmobil_id, kunde_id, start_datum, end_datum, 
-                    anzahl_naechte, gesamtpreis, extras, status, gebucht_am
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, 'angefragt', NOW())
-                RETURNING *
-            `,
+                    anzahl_naechte, gesamtpreis, extras, notizen, status, gebucht_am
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'angefragt', NOW())
+                RETURNING *`,
                 [
                     vehicleId,
                     kunde_id,
                     startDate,
                     endDate,
-                    nights || BookingController.calculateNights(startDate, endDate),
+                    calculatedNights,
                     totalPrice,
-                    JSON.stringify(combinedExtras)
+                    JSON.stringify(combinedExtras),
+                    notes
                 ]
             );
 
             const booking = bookingResult.rows[0];
 
-            // Fahrzeug- und Kundendaten für Response
+            // Vollständige Buchungsdaten mit Fahrzeug- und Kundendaten abrufen
             const detailsResult = await client.query(
-                `
-                SELECT 
+                `SELECT 
                     b.*,
-                    w.name as vehicle_name, w.modell, w.preis_pro_tag,
+                    w.name as vehicle_name, w.modell, w.preis_pro_tag, w.hauptbild,
                     u.vorname, u.nachname, u.email
                 FROM buchungen b
                 LEFT JOIN wohnmobile w ON b.wohnmobil_id = w.id
                 LEFT JOIN benutzer u ON b.kunde_id = u.id
-                WHERE b.id = $1
-            `,
+                WHERE b.id = $1`,
                 [booking.id]
             );
 
             await client.query('COMMIT');
 
-            const response = {
-                id: booking.id,
-                buchungs_id: booking.id, // Für Kompatibilität
-                ...detailsResult.rows[0],
-                customer_info: customerInfo,
+            res.status(201).json({
                 success: true,
-                message: 'Buchung erfolgreich erstellt'
-            };
-
-            res.status(201).json(response);
+                message: 'Buchung erfolgreich erstellt',
+                booking: detailsResult.rows[0]
+            });
         } catch (err) {
             await client.query('ROLLBACK');
             console.error('Fehler beim Erstellen der Buchung:', err);
@@ -425,6 +390,64 @@ class BookingController {
                 error: 'Server Fehler beim Laden der Buchungshistorie',
                 code: 'SERVER_ERROR'
             });
+        }
+    }
+
+    // Alle Buchungen abrufen
+    static async getAllBookings(req, res) {
+        try {
+            const alleBuchungen = await pool.query('SELECT * FROM buchungen');
+            res.json(alleBuchungen.rows);
+        } catch (err) {
+            console.error(err.message);
+            res.status(500).json({ error: 'Server Fehler beim Abrufen der Buchungen' });
+        }
+    }
+
+    // Einzelne Buchung abrufen
+    static async getBookingById(req, res) {
+        try {
+            const { id } = req.params;
+            const buchung = await pool.query(
+                `SELECT b.*, w.name as vehicle_name, w.modell, w.preis_pro_tag,
+                        u.vorname, u.nachname, u.email
+                 FROM buchungen b
+                 LEFT JOIN wohnmobile w ON b.wohnmobil_id = w.id
+                 LEFT JOIN benutzer u ON b.kunde_id = u.id
+                 WHERE b.id = $1`,
+                [id]
+            );
+
+            if (buchung.rows.length === 0) {
+                return res.status(404).json({ message: 'Buchung nicht gefunden' });
+            }
+
+            res.json(buchung.rows[0]);
+        } catch (err) {
+            console.error(err.message);
+            res.status(500).json({ error: 'Server Fehler beim Abrufen der Buchung' });
+        }
+    }
+
+    // Buchungen für ein Wohnmobil abrufen
+    static async getBookingsByVehicle(req, res) {
+        try {
+            const { id } = req.params;
+            const buchungen = await pool.query(
+                `SELECT 
+                    id, wohnmobil_id, kunde_id,
+                    TO_CHAR(start_datum, 'YYYY-MM-DD') as start_datum,
+                    TO_CHAR(end_datum, 'YYYY-MM-DD') as end_datum,
+                    anzahl_naechte, gesamtpreis, status, extras, notizen,
+                    stornierung_grund, storniert_am, gebucht_am, geaendert_am
+                 FROM buchungen 
+                 WHERE wohnmobil_id = $1`,
+                [id]
+            );
+            res.json(buchungen.rows);
+        } catch (err) {
+            console.error(err.message);
+            res.status(500).json({ error: 'Server Fehler beim Abrufen der Buchungen' });
         }
     }
 }
