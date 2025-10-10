@@ -276,8 +276,6 @@ const BookingPage: React.FC = () => {
                 notes: '' // Optional: Zusätzliche Notizen
             };
 
-
-
             // API-Anfrage für die Buchung
             try {
                 const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.BOOKINGS.BASE}`, {
@@ -314,7 +312,6 @@ const BookingPage: React.FC = () => {
                     )}&booking_id=${bookingId}`
                 );
             } catch (apiError) {
-
                 // Fallback: Simuliere erfolgreiche Buchung
                 await new Promise((resolve) => setTimeout(resolve, 1000));
 

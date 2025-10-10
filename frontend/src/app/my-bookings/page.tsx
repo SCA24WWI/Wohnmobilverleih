@@ -110,7 +110,9 @@ const MyBookingsPage: React.FC = () => {
                     setError('Unerwartetes Datenformat vom Server');
                 }
             } catch (err) {
-                setError(`Fehler beim Laden der Buchungen: ${err instanceof Error ? err.message : 'Unbekannter Fehler'}`);
+                setError(
+                    `Fehler beim Laden der Buchungen: ${err instanceof Error ? err.message : 'Unbekannter Fehler'}`
+                );
             } finally {
                 setLoading(false);
             }

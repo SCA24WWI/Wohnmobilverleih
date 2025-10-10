@@ -24,7 +24,6 @@ class VehicleController {
                 SELECT COUNT(DISTINCT w.id) as total
                 FROM wohnmobile w
                 LEFT JOIN buchungen b ON w.id = b.wohnmobil_id
-                    AND b.status IN ('bestätigt', 'angefragt')
                     AND b.end_datum > $3::DATE
                     AND b.start_datum < $4::DATE
                 WHERE
@@ -42,7 +41,6 @@ class VehicleController {
                 SELECT DISTINCT w.*
                 FROM wohnmobile w
                 LEFT JOIN buchungen b ON w.id = b.wohnmobil_id
-                    AND b.status IN ('bestätigt', 'angefragt')
                     AND b.end_datum > $3::DATE
                     AND b.start_datum < $4::DATE
                 WHERE

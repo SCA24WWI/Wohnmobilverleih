@@ -97,7 +97,6 @@ class BookingController {
             FROM buchungen b
             LEFT JOIN benutzer u ON b.kunde_id = u.id
             WHERE b.wohnmobil_id = $1 
-            AND b.status IN ('angefragt', 'bestätigt', 'in_bearbeitung')
             AND (
                 (b.start_datum <= $2 AND b.end_datum >= $2) OR
                 (b.start_datum <= $3 AND b.end_datum >= $3) OR
@@ -267,21 +266,12 @@ class BookingController {
     }
 
     /**
-     * Buchung aktualisieren
+     * Buchung aktualisieren (nur Notizen, da status entfernt wurde)
      */
     static async updateBooking(req, res) {
         try {
             const { id } = req.params;
-            const { status, notes, stornierung_grund } = req.body;
-
-            const allowedStatusChanges = {
-                angefragt: ['bestätigt', 'abgelehnt', 'storniert'],
-                bestätigt: ['in_bearbeitung', 'storniert', 'abgeschlossen'],
-                in_bearbeitung: ['abgeschlossen', 'storniert'],
-                abgelehnt: [], // Final
-                storniert: [], // Final
-                abgeschlossen: [] // Final
-            };
+            const { notes } = req.body;
 
             // Aktuelle Buchung laden
             const currentBooking = await pool.query('SELECT * FROM buchungen WHERE id = $1', [id]);
@@ -293,40 +283,23 @@ class BookingController {
                 });
             }
 
-            const current = currentBooking.rows[0];
-
-            if (status && !allowedStatusChanges[current.status].includes(status)) {
-                return res.status(400).json({
-                    error: `Status-Änderung von '${current.status}' zu '${status}' nicht erlaubt`,
-                    code: 'INVALID_STATUS_CHANGE',
-                    allowed_changes: allowedStatusChanges[current.status]
-                });
-            }
-
             // Update durchführen
             let updateQuery = 'UPDATE buchungen SET ';
             let updateParams = [];
             let paramIndex = 1;
 
-            if (status) {
-                updateQuery += `status = $${paramIndex}, `;
-                updateParams.push(status);
-                paramIndex++;
-
-                if (status === 'storniert') {
-                    updateQuery += `storniert_am = NOW(), `;
-                    if (stornierung_grund) {
-                        updateQuery += `stornierung_grund = $${paramIndex}, `;
-                        updateParams.push(stornierung_grund);
-                        paramIndex++;
-                    }
-                }
-            }
-
             if (notes) {
                 updateQuery += `notizen = $${paramIndex}, `;
                 updateParams.push(notes);
                 paramIndex++;
+            }
+
+            // Fallback wenn keine Daten zum Update da sind
+            if (paramIndex === 1) {
+                return res.status(400).json({
+                    error: 'Keine Daten zum Aktualisieren bereitgestellt',
+                    code: 'NO_UPDATE_DATA'
+                });
             }
 
             updateQuery = updateQuery.slice(0, -2) + ` WHERE id = $${paramIndex} RETURNING *`;

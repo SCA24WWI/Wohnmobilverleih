@@ -23,6 +23,7 @@ CREATE TABLE
         preis_pro_tag NUMERIC(8, 2) NOT NULL,
         hauptbild VARCHAR(500),
         galerie_bilder JSONB DEFAULT '[]',
+        features JSONB DEFAULT '[]',
         erstellt_am TIMESTAMP
         WITH
             TIME ZONE DEFAULT NOW ()
@@ -39,24 +40,10 @@ CREATE TABLE
         -- Grundlegende Informationen
         anzahl_naechte INTEGER,
         gesamtpreis NUMERIC(10, 2) NOT NULL,
-        -- Status und Verwaltung
-        status VARCHAR(20) NOT NULL DEFAULT 'angefragt' CHECK (
-            status IN (
-                'angefragt',
-                'bestätigt',
-                'storniert',
-                'abgeschlossen',
-                'abgelehnt'
-            )
-        ),
         -- Zusätzliche Informationen
         extras JSONB DEFAULT '[]',
         notizen TEXT,
-        stornierung_grund TEXT,
-        storniert_am TIMESTAMP
-        WITH
-            TIME ZONE,
-            gebucht_am TIMESTAMP
+        gebucht_am TIMESTAMP
         WITH
             TIME ZONE DEFAULT NOW (),
             geaendert_am TIMESTAMP
@@ -92,7 +79,8 @@ INSERT INTO
         ort,
         preis_pro_tag,
         hauptbild,
-        galerie_bilder
+        galerie_bilder,
+        features
     )
 VALUES
     (
@@ -103,7 +91,8 @@ VALUES
         'München',
         110.00,
         '/image/vehicles/knaus-sky-traveller/main.png',
-        '["/image/vehicles/knaus-sky-traveller/gallery1.png", "/image/vehicles/knaus-sky-traveller/gallery2.png", "/image/vehicles/knaus-sky-traveller/gallery3.png"]'
+        '["/image/vehicles/knaus-sky-traveller/gallery1.png", "/image/vehicles/knaus-sky-traveller/gallery2.png", "/image/vehicles/knaus-sky-traveller/gallery3.png"]',
+        '["Küche", "Bett", "Dusche", "WC", "Sitzgruppe", "Heizung", "Markise", "Kühlschrank", "Außensteckdose"]'
     ),
     (
         'Bürstner Lyseo',
@@ -113,7 +102,8 @@ VALUES
         'Berlin',
         135.50,
         '/image/vehicles/buerstner-lyseo/main.png',
-        '["/image/vehicles/buerstner-lyseo/gallery1.png", "/image/vehicles/buerstner-lyseo/gallery2.png", "/image/vehicles/buerstner-lyseo/gallery3.png"]'
+        '["/image/vehicles/buerstner-lyseo/gallery1.png", "/image/vehicles/buerstner-lyseo/gallery2.png", "/image/vehicles/buerstner-lyseo/gallery3.png"]',
+        '["Küche", "Bett", "Dusche", "WC", "Sitzgruppe", "Großer Stauraum", "Heizung", "Fahrradträger", "Kühlschrank", "Rückfahrkamera"]'
     ),
     (
         'Hymer B-Klasse SL',
@@ -123,7 +113,8 @@ VALUES
         'Hamburg',
         145.00,
         '/image/vehicles/hymer-b-klasse-sl/main.png',
-        '["/image/vehicles/hymer-b-klasse-sl/gallery1.png", "/image/vehicles/hymer-b-klasse-sl/gallery2.png", "/image/vehicles/hymer-b-klasse-sl/gallery3.png", "/image/vehicles/hymer-b-klasse-sl/gallery4.png"]'
+        '["/image/vehicles/hymer-b-klasse-sl/gallery1.png", "/image/vehicles/hymer-b-klasse-sl/gallery2.png", "/image/vehicles/hymer-b-klasse-sl/gallery3.png", "/image/vehicles/hymer-b-klasse-sl/gallery4.png"]',
+        '["Küche", "Bett", "Dusche", "WC", "Sitzgruppe", "Klimaanlage", "Luxus-Ausstattung", "Heizung", "Sat-TV", "Kühlschrank", "Mikrowelle"]'
     ),
     (
         'Weinsberg CaraCore',
@@ -133,7 +124,8 @@ VALUES
         'Köln',
         85.00,
         '/image/vehicles/weinsberg-caracore/main.png',
-        '["/image/vehicles/weinsberg-caracore/gallery1.png", "/image/vehicles/weinsberg-caracore/gallery2.png", "/image/vehicles/weinsberg-caracore/gallery3.png"]'
+        '["/image/vehicles/weinsberg-caracore/gallery1.png", "/image/vehicles/weinsberg-caracore/gallery2.png", "/image/vehicles/weinsberg-caracore/gallery3.png"]',
+        '["Küche", "Bett", "Kompakt", "Stadtfahrtauglich", "Heizung", "Kühlschrank"]'
     ),
     (
         'Dethleffs Trend',
@@ -143,7 +135,8 @@ VALUES
         'Frankfurt',
         125.00,
         '/image/vehicles/dethleffs-trend/main.png',
-        '["/image/vehicles/dethleffs-trend/gallery1.png", "/image/vehicles/dethleffs-trend/gallery2.png", "/image/vehicles/dethleffs-trend/gallery3.png"]'
+        '["/image/vehicles/dethleffs-trend/gallery1.png", "/image/vehicles/dethleffs-trend/gallery2.png", "/image/vehicles/dethleffs-trend/gallery3.png"]',
+        '["Küche", "Bett", "Dusche", "WC", "Sitzgruppe", "Heizung", "Markise", "Fahrradträger", "Kühlschrank", "WLAN"]'
     ),
     (
         'Adria Coral Axess',
@@ -153,7 +146,8 @@ VALUES
         'Stuttgart',
         155.00,
         '/image/vehicles/adria-coral-axess/main.png',
-        '["/image/vehicles/adria-coral-axess/gallery1.png", "/image/vehicles/adria-coral-axess/gallery2.png", "/image/vehicles/adria-coral-axess/gallery3.png"]'
+        '["/image/vehicles/adria-coral-axess/gallery1.png", "/image/vehicles/adria-coral-axess/gallery2.png", "/image/vehicles/adria-coral-axess/gallery3.png"]',
+        '["Küche", "Bett", "Dusche", "WC", "Sitzgruppe", "Klimaanlage", "Luxus-Ausstattung", "Solaranlage", "Kühlschrank", "Geschirrspüler"]'
     ),
     (
         'Pössl Roadcamp',
@@ -163,7 +157,8 @@ VALUES
         'Dresden',
         95.00,
         '/image/vehicles/poessl-roadcamp/main.png',
-        '["/image/vehicles/poessl-roadcamp/gallery1.png", "/image/vehicles/poessl-roadcamp/gallery2.png", "/image/vehicles/poessl-roadcamp/gallery3.png"]'
+        '["/image/vehicles/poessl-roadcamp/gallery1.png", "/image/vehicles/poessl-roadcamp/gallery2.png", "/image/vehicles/poessl-roadcamp/gallery3.png"]',
+        '["Küche", "Bett", "Kompakt", "Stadtfahrtauglich", "Heizung", "Solaranlage", "Kühlschrank"]'
     ),
     (
         'Carthago Chic S-Plus',
@@ -173,7 +168,8 @@ VALUES
         'Düsseldorf',
         165.00,
         '/image/vehicles/carthago-chic-s-plus/main.png',
-        '["/image/vehicles/carthago-chic-s-plus/gallery1.png", "/image/vehicles/carthago-chic-s-plus/gallery2.png", "/image/vehicles/carthago-chic-s-plus/gallery3.png"]'
+        '["/image/vehicles/carthago-chic-s-plus/gallery1.png", "/image/vehicles/carthago-chic-s-plus/gallery2.png", "/image/vehicles/carthago-chic-s-plus/gallery3.png"]',
+        '["Küche", "Bett", "Dusche", "WC", "Sitzgruppe", "Klimaanlage", "Luxus-Ausstattung", "Sat-TV", "Kühlschrank", "Mikrowelle", "Geschirrspüler"]'
     ),
     (
         'Laika Ecovip',
@@ -183,7 +179,8 @@ VALUES
         'Leipzig',
         115.00,
         '/image/vehicles/laika-ecovip/main.png',
-        '["/image/vehicles/laika-ecovip/gallery1.png", "/image/vehicles/laika-ecovip/gallery2.png", "/image/vehicles/laika-ecovip/gallery3.png"]'
+        '["/image/vehicles/laika-ecovip/gallery1.png", "/image/vehicles/laika-ecovip/gallery2.png", "/image/vehicles/laika-ecovip/gallery3.png"]',
+        '["Küche", "Bett", "Dusche", "WC", "Sitzgruppe", "Solaranlage", "Heizung", "Kühlschrank"]'
     ),
     (
         'Hobby Optima Deluxe',
@@ -193,7 +190,8 @@ VALUES
         'Nürnberg',
         140.00,
         '/image/vehicles/hobby-optima-deluxe/main.png',
-        '["/image/vehicles/hobby-optima-deluxe/gallery1.png", "/image/vehicles/hobby-optima-deluxe/gallery2.png", "/image/vehicles/hobby-optima-deluxe/gallery3.png", "/image/vehicles/hobby-optima-deluxe/gallery4.png"]'
+        '["/image/vehicles/hobby-optima-deluxe/gallery1.png", "/image/vehicles/hobby-optima-deluxe/gallery2.png", "/image/vehicles/hobby-optima-deluxe/gallery3.png", "/image/vehicles/hobby-optima-deluxe/gallery4.png"]',
+        '["Küche", "Bett", "Dusche", "WC", "Sitzgruppe", "Großer Stauraum", "Fahrradträger", "Heizung", "Kühlschrank", "WLAN"]'
     ),
     (
         'Malibu Van Charming',
@@ -203,7 +201,8 @@ VALUES
         'Bremen',
         88.00,
         '/image/vehicles/malibu-van-charming/main.png',
-        '["/image/vehicles/malibu-van-charming/gallery1.png", "/image/vehicles/malibu-van-charming/gallery2.png", "/image/vehicles/malibu-van-charming/gallery3.png"]'
+        '["/image/vehicles/malibu-van-charming/gallery1.png", "/image/vehicles/malibu-van-charming/gallery2.png", "/image/vehicles/malibu-van-charming/gallery3.png"]',
+        '["Küche", "Bett", "Kompakt", "Stadtfahrtauglich", "Heizung", "Kühlschrank"]'
     ),
     (
         'Roller Team Zefiro',
@@ -213,7 +212,8 @@ VALUES
         'Hannover',
         120.00,
         '/image/vehicles/roller-team-zefiro/main.png',
-        '["/image/vehicles/roller-team-zefiro/gallery1.png", "/image/vehicles/roller-team-zefiro/gallery2.png", "/image/vehicles/roller-team-zefiro/gallery3.png"]'
+        '["/image/vehicles/roller-team-zefiro/gallery1.png", "/image/vehicles/roller-team-zefiro/gallery2.png", "/image/vehicles/roller-team-zefiro/gallery3.png"]',
+        '["Küche", "Bett", "Dusche", "WC", "Sitzgruppe", "Heizung", "Markise", "Kühlschrank"]'
     ),
     (
         'Sunlight Cliff Adventure',
@@ -223,7 +223,8 @@ VALUES
         'Dortmund',
         150.00,
         '/image/vehicles/sunlight-cliff-adventure/main.png',
-        '["/image/vehicles/sunlight-cliff-adventure/gallery1.png", "/image/vehicles/sunlight-cliff-adventure/gallery2.png", "/image/vehicles/sunlight-cliff-adventure/gallery3.png", "/image/vehicles/sunlight-cliff-adventure/gallery4.png"]'
+        '["/image/vehicles/sunlight-cliff-adventure/gallery1.png", "/image/vehicles/sunlight-cliff-adventure/gallery2.png", "/image/vehicles/sunlight-cliff-adventure/gallery3.png", "/image/vehicles/sunlight-cliff-adventure/gallery4.png"]',
+        '["Küche", "Bett", "Dusche", "WC", "Sitzgruppe", "Großer Stauraum", "Fahrradträger", "Heizung", "Rückfahrkamera", "Kühlschrank", "WLAN"]'
     );
 
 -- Beispiel-Buchungen für Oktober 2025
@@ -234,7 +235,6 @@ INSERT INTO
         start_datum,
         end_datum,
         gesamtpreis,
-        status,
         extras,
         notizen
     )
@@ -246,7 +246,6 @@ VALUES
         '2025-10-05',
         '2025-10-10',
         550.00,
-        'bestätigt',
         '["Fahrradträger", "Zusatzkissen"]',
         'Familienurlaub in Bayern'
     ),
@@ -257,7 +256,6 @@ VALUES
         '2025-10-12',
         '2025-10-19',
         948.50,
-        'bestätigt',
         '["Campingstühle", "Grill"]',
         'Herbstferien mit der Familie'
     ),
@@ -268,7 +266,6 @@ VALUES
         '2025-10-22',
         '2025-10-26',
         580.00,
-        'angefragt',
         '["Navigationssystem"]',
         'Wochenendtrip nach Norddeutschland'
     ),
@@ -279,7 +276,6 @@ VALUES
         '2025-10-08',
         '2025-10-14',
         510.00,
-        'bestätigt',
         '["Campingtisch", "Auffahrkeile"]',
         'Städtetrip Rheinland'
     ),
@@ -290,7 +286,6 @@ VALUES
         '2025-10-15',
         '2025-10-23',
         1000.00,
-        'bestätigt',
         '["Außendusche", "Sonnenschutz"]',
         'Herbsturlaub mit Großfamilie'
     ),
@@ -301,7 +296,6 @@ VALUES
         '2025-10-27',
         '2025-10-30',
         465.00,
-        'angefragt',
         '["Satellitenschüssel"]',
         'Kurztrip Baden-Württemberg'
     ),
@@ -312,7 +306,6 @@ VALUES
         '2025-10-03',
         '2025-10-12',
         855.00,
-        'bestätigt',
         '["Solarpanel", "Zusatzbatterie"]',
         'Autarke Reise durch Sachsen'
     ),
@@ -323,7 +316,6 @@ VALUES
         '2025-10-18',
         '2025-10-23',
         825.00,
-        'bestätigt',
         '["Premium-Ausstattung", "Concierge-Service"]',
         'Luxusreise NRW'
     ),
@@ -334,7 +326,6 @@ VALUES
         '2025-10-09',
         '2025-10-15',
         690.00,
-        'angefragt',
         '["Umweltpaket", "Recycling-Set"]',
         'Nachhaltiger Urlaub'
     ),
@@ -345,7 +336,6 @@ VALUES
         '2025-10-01',
         '2025-10-11',
         1400.00,
-        'bestätigt',
         '["Familien-Komplettpaket", "Kindersitze", "Spielzeug"]',
         'Herbstferien Großfamilie'
     ),
@@ -356,7 +346,6 @@ VALUES
         '2025-10-24',
         '2025-10-28',
         352.00,
-        'bestätigt',
         '["Surfboard-Halterung"]',
         'Nordsee-Trip'
     ),
@@ -367,7 +356,6 @@ VALUES
         '2025-10-06',
         '2025-10-13',
         840.00,
-        'angefragt',
         '["Markise", "Campingmöbel"]',
         'Herbstferien Niedersachsen'
     ),
@@ -378,7 +366,6 @@ VALUES
         '2025-10-14',
         '2025-10-22',
         1200.00,
-        'bestätigt',
         '["Abenteuer-Paket", "Wanderausrüstung"]',
         'Familienreise ins Sauerland'
     );

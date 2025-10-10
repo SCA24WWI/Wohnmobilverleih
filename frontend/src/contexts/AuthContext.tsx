@@ -81,7 +81,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 setUser(null);
             }
         } catch (error) {
-
             setToken(null);
             setUser(null);
         } finally {
@@ -110,11 +109,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 setUser(data.user);
                 return true;
             } else {
-
                 return false;
             }
         } catch (error) {
-
             return false;
         }
     };
@@ -136,11 +133,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 setUser(data.user);
                 return true;
             } else {
-
                 return false;
             }
         } catch (error) {
-
             return false;
         }
     };

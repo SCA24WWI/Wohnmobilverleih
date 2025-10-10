@@ -51,6 +51,7 @@ const VehicleDetailContent: React.FC = () => {
     const [endDate, setEndDate] = useState<string>('');
     const [nights, setNights] = useState(0);
 
+    //TODO: ein bild auf dem steht "kein bild vorhanden" zweimal
     // Fallback-Bilder falls keine Bilder in der DB vorhanden sind
     const fallbackImages = [
         '/image/blogs/camper_alle_budget.png',
@@ -100,9 +101,7 @@ const VehicleDetailContent: React.FC = () => {
                                 }
                             });
                         }
-                    } catch (parseError) {
-
-                    }
+                    } catch (parseError) {}
                 }
 
                 const images = allImages;
@@ -151,14 +150,12 @@ const VehicleDetailContent: React.FC = () => {
             );
 
             if (!response.ok) {
-
                 return true;
             }
 
             const result = await response.json();
             return result.available;
         } catch (err) {
-
             return true;
         }
     };

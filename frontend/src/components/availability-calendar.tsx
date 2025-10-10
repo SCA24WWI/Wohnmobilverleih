@@ -82,7 +82,6 @@ const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
 
                 setBookedDates(bookedDateRanges);
             } catch (err) {
-
                 setError('Buchungen konnten nicht geladen werden');
 
                 // Fallback auf Mockdaten bei Fehler
@@ -191,14 +190,12 @@ const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
             );
 
             if (!response.ok) {
-
                 return true; // Im Zweifelsfall als verfügbar annehmen
             }
 
             const result = await response.json();
             return result.available;
         } catch (err) {
-
             return true; // Im Zweifelsfall als verfügbar annehmen
         }
     };

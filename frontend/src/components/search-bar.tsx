@@ -116,8 +116,22 @@ async function fetchVehicles(filters?: SearchFilters, page: number = 1): Promise
                         galleryImages = JSON.parse(vehicle.galerie_bilder);
                     }
                 } catch (parseError) {
-
                     galleryImages = [];
+                }
+            }
+
+            // Sichere Verarbeitung der Features
+            let features: string[] = [];
+            if (vehicle.features) {
+                try {
+                    if (Array.isArray(vehicle.features)) {
+                        features = vehicle.features;
+                    } else if (typeof vehicle.features === 'string') {
+                        features = JSON.parse(vehicle.features);
+                    }
+                } catch (parseError) {
+                    console.warn('Fehler beim Parsen der Features:', parseError);
+                    features = [];
                 }
             }
 
@@ -128,9 +142,9 @@ async function fetchVehicles(filters?: SearchFilters, page: number = 1): Promise
                 guests: vehicle.bettenzahl || 2,
                 location: vehicle.ort || 'Unbekannt',
                 pricePerDay: parseFloat(vehicle.preis_pro_tag) || 0,
-                image: vehicle.hauptbild || `/image/books/RectangleBig${(index % 7) + 1}.svg`, // Hauptbild aus DB oder Fallback
+                image: vehicle.hauptbild, // Hauptbild aus DB
                 galleryImages: galleryImages, // Sicher geparste Galerie-Bilder
-                features: getFeaturesByModel(vehicle.modell || '', vehicle.bettenzahl || 2),
+                features: features, // Features direkt aus der Datenbank
                 available: true,
                 fuehrerschein: vehicle.fuehrerschein || '',
                 beschreibung: vehicle.beschreibung || null
@@ -142,29 +156,8 @@ async function fetchVehicles(filters?: SearchFilters, page: number = 1): Promise
             pagination: apiData.pagination
         };
     } catch (error) {
-
         throw error;
     }
-}
-
-function getFeaturesByModel(modell: string, bettenzahl: number): string[] {
-    const baseFeatures = ['Küche', 'Bett'];
-
-    if (!modell) return baseFeatures;
-
-    const modellLower = modell.toLowerCase();
-
-    if (modellLower.includes('teilintegriert')) {
-        return [...baseFeatures, 'Dusche', 'WC', 'Sitzgruppe'];
-    } else if (modellLower.includes('alkoven')) {
-        return [...baseFeatures, 'Dusche', 'WC', 'Sitzgruppe', 'Großer Stauraum'];
-    } else if (modellLower.includes('vollintegriert')) {
-        return [...baseFeatures, 'Dusche', 'WC', 'Sitzgruppe', 'Klimaanlage', 'Luxus-Ausstattung'];
-    } else if (modellLower.includes('kastenwagen')) {
-        return [...baseFeatures, 'Kompakt', 'Stadtfahrtauglich'];
-    }
-
-    return baseFeatures;
 }
 
 // Vereinfachte Interfaces
@@ -186,7 +179,12 @@ interface SearchFormData {
 interface SearchBarProps {
     quickbook?: boolean;
     onSearch?: (filters: SearchFormData) => void;
-    onSearchResults?: (results: VehicleSearchResponse | null, isSearching: boolean, error: string | null, currentFilters?: any) => void;
+    onSearchResults?: (
+        results: VehicleSearchResponse | null,
+        isSearching: boolean,
+        error: string | null,
+        currentFilters?: any
+    ) => void;
     initialFilters?: any;
 }
 
@@ -212,7 +210,6 @@ export function SearchBar({ quickbook = true, onSearch, onSearchResults, initial
     // useEffect um initialFilters zu laden
     React.useEffect(() => {
         if (initialFilters && Object.keys(initialFilters).length > 0) {
-
             setFormData((prev) => ({
                 ...prev,
                 location: initialFilters.location || prev.location,
@@ -251,7 +248,6 @@ export function SearchBar({ quickbook = true, onSearch, onSearchResults, initial
             onSearchResults &&
             !hasInitialized.current
         ) {
-
             hasInitialized.current = true;
             handleSearch(initialFilters, 1);
         }
@@ -281,7 +277,6 @@ export function SearchBar({ quickbook = true, onSearch, onSearchResults, initial
             } catch (err) {
                 const error = 'Fehler bei der Suche. Bitte versuchen Sie es erneut.';
                 setSearchError(error);
-
 
                 // Fehler an Parent-Komponente weiterleiten
                 if (onSearchResults) {

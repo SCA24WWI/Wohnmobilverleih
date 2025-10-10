@@ -1,18 +1,42 @@
 services:
-  db:
-    image: postgres:16-alpine
-    restart: always
-    environment:
-      - POSTGRES_USER=app_user
-      - POSTGRES_PASSWORD=sicheres_passwort
-      - POSTGRES_DB=wohnmobil_db
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    db:
+        image: postgres:16-alpine
+        restart: always
+        environment:
+            - POSTGRES_USER=app_user
+            - POSTGRES_PASSWORD=sicheres_passwort
+            - POSTGRES_DB=wohnmobil_db
+        ports:
+            - '5432:5432'
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+            - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+        networks:
+            - wohnmobil-network
+
+    pgadmin:
+        image: dpage/pgadmin4:latest
+        restart: always
+        environment:
+            - PGADMIN_DEFAULT_EMAIL=admin@wohnmobil.de
+            - PGADMIN_DEFAULT_PASSWORD=admin123
+            - PGADMIN_CONFIG_SERVER_MODE=False
+        ports:
+            - '8080:80'
+        volumes:
+            - pgadmin_data:/var/lib/pgadmin
+        networks:
+            - wohnmobil-network
+        depends_on:
+            - db
 
 volumes:
-  postgres_data:
-    # Docker verwaltet dieses Volume. Die Daten bleiben auch nach
-    # dem Stoppen und Entfernen des Containers erhalten.
+    postgres_data:
+        # Docker verwaltet dieses Volume. Die Daten bleiben auch nach
+        # dem Stoppen und Entfernen des Containers erhalten.
+    pgadmin_data:
+        # Volume für pgAdmin Konfiguration und Einstellungen
+
+networks:
+    wohnmobil-network:
+        driver: bridge
