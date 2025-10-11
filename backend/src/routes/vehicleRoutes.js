@@ -10,15 +10,15 @@ router.get('/search', VehicleController.searchVehicles);
 router.get('/:id', VehicleController.getVehicleById);
 
 // ENDPUNKT: POST /api/wohnmobile - Erstellt ein neues Wohnmobil.
-// ZUGRIFF: Nur für 'anbieter' oder 'admin'..
+// ZUGRIFF: Alle angemeldeten Benutzer
 router.post('/create', VehicleController.createVehicle);
 
 // ENDPUNKT: PUT /api/wohnmobile/:id/edit - Aktualisiert ein bestehendes Wohnmobil.
-// ZUGRIFF: Nur für den Besitzer des Wohnmobils oder 'admin'.
+// ZUGRIFF: Nur für den Besitzer des Wohnmobils
 router.put('/:id/edit', VehicleController.updateVehicle);
 
 // ENDPUNKT: DELETE /api/wohnmobile/:id - Löscht ein Wohnmobil.
-// ZUGRIFF: Nur für den Besitzer des Wohnmobils oder 'admin'.
+// ZUGRIFF: Nur für den Besitzer des Wohnmobils
 router.delete('/:id/delete', VehicleController.deleteVehicle);
 
 module.exports = router;

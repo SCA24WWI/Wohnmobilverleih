@@ -15,7 +15,7 @@ const BookingSuccessPage: React.FC = () => {
         return (
             <>
                 <Navbar />
-                <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <div className="min-h-screen flex items-center justify-center">
                     <div className="max-w-md mx-auto text-center">
                         <div className="bg-white rounded-lg shadow-lg p-8">
                             <div className="text-red-500 text-6xl mb-4">❌</div>
@@ -38,12 +38,12 @@ const BookingSuccessPage: React.FC = () => {
     return (
         <>
             <Navbar />
-            <div className="min-h-screen bg-gray-50 pt-24">
+            <div className="min-h-screen pt-24">
                 <div className="max-w-4xl mx-auto px-4 py-8">
                     {/* Success Header */}
                     <div className="text-center mb-8">
                         <div className="text-green-500 text-6xl mb-4">✅</div>
-                        <h1 className="text-3xl font-bold text-gray-900 mb-2">Buchung erfolgreich!</h1>
+                        <h1 className="text-3xl font-bold text-green-800 mb-2">Buchung erfolgreich!</h1>
                         <p className="text-lg text-gray-600">
                             Vielen Dank für Ihre Buchung. Sie erhalten in Kürze eine Bestätigung per E-Mail.
                         </p>
@@ -125,7 +125,7 @@ const BookingSuccessPage: React.FC = () => {
                         <h3 className="text-lg font-semibold text-gray-900 mb-4">Fragen zu Ihrer Buchung?</h3>
                         <p className="text-gray-600 mb-4">Unser Team steht Ihnen gerne zur Verfügung!</p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center text-sm">
-                            <span className="text-gray-600">📧 info@wohnmobilverleih.de</span>
+                            <span className="text-gray-600">📧 vanlife.sued@gmail.com</span>
                             <span className="text-gray-600">📞 +49 (0) 123 456 789</span>
                         </div>
                     </div>

@@ -19,6 +19,7 @@ interface Vehicle {
     available: boolean;
     fuehrerschein?: string;
     beschreibung?: string;
+    haustiere_erlaubt?: boolean;
 }
 
 interface PaginationInfo {

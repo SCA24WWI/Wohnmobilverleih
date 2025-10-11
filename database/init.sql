@@ -5,7 +5,6 @@ CREATE TABLE
         passwort_hash VARCHAR(255) NOT NULL,
         vorname VARCHAR(100),
         nachname VARCHAR(100),
-        rolle VARCHAR(20) NOT NULL CHECK (rolle IN ('kunde', 'anbieter', 'admin')),
         erstellt_am TIMESTAMP
         WITH
             TIME ZONE DEFAULT NOW ()
@@ -24,6 +23,15 @@ CREATE TABLE
         hauptbild VARCHAR(500),
         galerie_bilder JSONB DEFAULT '[]',
         features JSONB DEFAULT '[]',
+        haustiere_erlaubt BOOLEAN DEFAULT FALSE,
+        -- Technische Daten
+        kraftstoffverbrauch NUMERIC(4, 1), -- l/100km
+        motorleistung INTEGER, -- kW
+        antriebsart VARCHAR(20), -- 'front', 'rear', 'all'
+        schadstoffklasse VARCHAR(20), -- z.B. 'Euro 6'
+        anhaengerlast INTEGER, -- kg
+        leergewicht INTEGER, -- kg
+        gesamtgewicht INTEGER, -- kg
         erstellt_am TIMESTAMP
         WITH
             TIME ZONE DEFAULT NOW ()
@@ -53,178 +61,302 @@ CREATE TABLE
     );
 
 INSERT INTO
-    benutzer (email, passwort_hash, vorname, nachname, rolle)
+    benutzer (email, passwort_hash, vorname, nachname)
 VALUES
     (
         'anbieter@test.de',
         'gehashtes_passwort_123',
         'Max',
-        'Mustermann',
-        'anbieter'
+        'Mustermann'
     ),
     (
         'kunde@test.de',
         'gehashtes_passwort_456',
         'Erika',
-        'Musterfrau',
-        'kunde'
+        'Musterfrau'
     );
 
 INSERT INTO
     wohnmobile (
         name,
         modell,
+        beschreibung,
         bettenzahl,
         fuehrerschein,
         ort,
         preis_pro_tag,
         hauptbild,
         galerie_bilder,
-        features
+        features,
+        haustiere_erlaubt,
+        kraftstoffverbrauch,
+        motorleistung,
+        antriebsart,
+        schadstoffklasse,
+        anhaengerlast,
+        leergewicht,
+        gesamtgewicht
     )
 VALUES
     (
         'Knaus Sky Traveller',
         'Teilintegriert',
+        'Der Knaus Sky Traveller ist das perfekte Wohnmobil für Familien und Paare, die Komfort mit Wendigkeit verbinden möchten. Mit seinem durchdachten Grundriss bietet es Platz für 4 Personen und verfügt über eine vollausgestattete Küche, ein komfortables Bad und eine gemütliche Sitzgruppe. Die große Markise sorgt für zusätzlichen Außenbereich.',
         4,
         'B',
         'München',
         110.00,
         '/image/vehicles/knaus-sky-traveller/main.png',
         '["/image/vehicles/knaus-sky-traveller/gallery1.png", "/image/vehicles/knaus-sky-traveller/gallery2.png", "/image/vehicles/knaus-sky-traveller/gallery3.png"]',
-        '["Küche", "Bett", "Dusche", "WC", "Sitzgruppe", "Heizung", "Markise", "Kühlschrank", "Außensteckdose"]'
+        '["Küche", "Bett", "Dusche", "WC", "Sitzgruppe", "Heizung", "Markise", "Kühlschrank", "Außensteckdose"]',
+        TRUE,
+        8.5, -- kraftstoffverbrauch
+        110, -- motorleistung
+        'front', -- antriebsart
+        'Euro 6', -- schadstoffklasse
+        1500, -- anhaengerlast
+        2800, -- leergewicht
+        3500 -- gesamtgewicht
     ),
     (
         'Bürstner Lyseo',
         'Alkoven',
+        'Der Bürstner Lyseo ist ein geräumiges Alkoven-Wohnmobil, ideal für Großfamilien oder Gruppen bis zu 5 Personen. Das charakteristische Alkoven-Bett bietet zusätzlichen Schlafplatz, während der großzügige Stauraum und der praktische Fahrradträger perfekt für längere Reisen sind. Die moderne Ausstattung mit Rückfahrkamera sorgt für sicheres Fahren.',
         5,
         'C1',
         'Berlin',
         135.50,
         '/image/vehicles/buerstner-lyseo/main.png',
         '["/image/vehicles/buerstner-lyseo/gallery1.png", "/image/vehicles/buerstner-lyseo/gallery2.png", "/image/vehicles/buerstner-lyseo/gallery3.png"]',
-        '["Küche", "Bett", "Dusche", "WC", "Sitzgruppe", "Großer Stauraum", "Heizung", "Fahrradträger", "Kühlschrank", "Rückfahrkamera"]'
+        '["Küche", "Bett", "Dusche", "WC", "Sitzgruppe", "Großer Stauraum", "Heizung", "Fahrradträger", "Kühlschrank", "Rückfahrkamera"]',
+        TRUE,
+        9.8, -- kraftstoffverbrauch
+        140, -- motorleistung
+        'front', -- antriebsart
+        'Euro 6', -- schadstoffklasse
+        2000, -- anhaengerlast
+        3200, -- leergewicht
+        4200 -- gesamtgewicht
     ),
     (
         'Hymer B-Klasse SL',
         'Vollintegriert',
+        'Der Hymer B-Klasse SL verkörpert Luxus auf Rädern. Dieses vollintegrierte Premium-Wohnmobil bietet 4 Personen höchsten Komfort mit Klimaanlage, Sat-TV und Mikrowelle. Die luxuriöse Ausstattung und das elegante Design machen jede Reise zu einem besonderen Erlebnis. Perfekt für anspruchsvolle Reisende.',
         4,
         'C1',
         'Hamburg',
         145.00,
         '/image/vehicles/hymer-b-klasse-sl/main.png',
         '["/image/vehicles/hymer-b-klasse-sl/gallery1.png", "/image/vehicles/hymer-b-klasse-sl/gallery2.png", "/image/vehicles/hymer-b-klasse-sl/gallery3.png", "/image/vehicles/hymer-b-klasse-sl/gallery4.png"]',
-        '["Küche", "Bett", "Dusche", "WC", "Sitzgruppe", "Klimaanlage", "Luxus-Ausstattung", "Heizung", "Sat-TV", "Kühlschrank", "Mikrowelle"]'
+        '["Küche", "Bett", "Dusche", "WC", "Sitzgruppe", "Klimaanlage", "Luxus-Ausstattung", "Heizung", "Sat-TV", "Kühlschrank", "Mikrowelle"]',
+        FALSE,
+        10.2, -- kraftstoffverbrauch
+        170, -- motorleistung
+        'rear', -- antriebsart
+        'Euro 6', -- schadstoffklasse
+        2500, -- anhaengerlast
+        3800, -- leergewicht
+        4500 -- gesamtgewicht
     ),
     (
         'Weinsberg CaraCore',
         'Kastenwagen',
+        'Der Weinsberg CaraCore ist der ideale Begleiter für spontane Abenteuer und Stadtausflüge. Als kompakter Kastenwagen für 2 Personen überzeugt er durch seine Wendigkeit und Stadtfahrtauglichkeit. Trotz seiner kompakten Größe bietet er alles Nötige für einen komfortablen Urlaub zu zweit.',
         2,
         'B',
         'Köln',
         85.00,
         '/image/vehicles/weinsberg-caracore/main.png',
         '["/image/vehicles/weinsberg-caracore/gallery1.png", "/image/vehicles/weinsberg-caracore/gallery2.png", "/image/vehicles/weinsberg-caracore/gallery3.png"]',
-        '["Küche", "Bett", "Kompakt", "Stadtfahrtauglich", "Heizung", "Kühlschrank"]'
+        '["Küche", "Bett", "Kompakt", "Stadtfahrtauglich", "Heizung", "Kühlschrank"]',
+        FALSE,
+        7.2, -- kraftstoffverbrauch
+        96, -- motorleistung
+        'front', -- antriebsart
+        'Euro 6', -- schadstoffklasse
+        1200, -- anhaengerlast
+        2200, -- leergewicht
+        3200 -- gesamtgewicht
     ),
     (
         'Dethleffs Trend',
         'Teilintegriert',
+        'Der Dethleffs Trend ist das perfekte Familien-Wohnmobil für bis zu 6 Personen. Mit seinem durchdachten Raumkonzept, WLAN-Ausstattung und praktischem Fahrradträger bietet er alles für den perfekten Familienurlaub. Die große Markise schafft zusätzlichen Lebensraum im Freien.',
         6,
         'C1',
         'Frankfurt',
         125.00,
         '/image/vehicles/dethleffs-trend/main.png',
         '["/image/vehicles/dethleffs-trend/gallery1.png", "/image/vehicles/dethleffs-trend/gallery2.png", "/image/vehicles/dethleffs-trend/gallery3.png"]',
-        '["Küche", "Bett", "Dusche", "WC", "Sitzgruppe", "Heizung", "Markise", "Fahrradträger", "Kühlschrank", "WLAN"]'
+        '["Küche", "Bett", "Dusche", "WC", "Sitzgruppe", "Heizung", "Markise", "Fahrradträger", "Kühlschrank", "WLAN"]',
+        TRUE,
+        9.1, -- kraftstoffverbrauch
+        130, -- motorleistung
+        'front', -- antriebsart
+        'Euro 6', -- schadstoffklasse
+        1800, -- anhaengerlast
+        3100, -- leergewicht
+        4000 -- gesamtgewicht
     ),
     (
         'Adria Coral Axess',
         'Vollintegriert',
+        'Das Adria Coral Axess ist ein luxuriöses vollintegriertes Wohnmobil mit erstklassiger Ausstattung. Die Solaranlage ermöglicht autarkes Reisen, während Klimaanlage und Geschirrspüler für höchsten Komfort sorgen. Perfekt für bis zu 5 Personen, die Wert auf Luxus und Nachhaltigkeit legen.',
         5,
         'C1',
         'Stuttgart',
         155.00,
         '/image/vehicles/adria-coral-axess/main.png',
         '["/image/vehicles/adria-coral-axess/gallery1.png", "/image/vehicles/adria-coral-axess/gallery2.png", "/image/vehicles/adria-coral-axess/gallery3.png"]',
-        '["Küche", "Bett", "Dusche", "WC", "Sitzgruppe", "Klimaanlage", "Luxus-Ausstattung", "Solaranlage", "Kühlschrank", "Geschirrspüler"]'
+        '["Küche", "Bett", "Dusche", "WC", "Sitzgruppe", "Klimaanlage", "Luxus-Ausstattung", "Solaranlage", "Kühlschrank", "Geschirrspüler"]',
+        TRUE,
+        11.5, -- kraftstoffverbrauch
+        160, -- motorleistung
+        'all', -- antriebsart
+        'Euro 6', -- schadstoffklasse
+        3000, -- anhaengerlast
+        4100, -- leergewicht
+        5000 -- gesamtgewicht
     ),
     (
         'Pössl Roadcamp',
         'Kastenwagen',
+        'Der Pössl Roadcamp verbindet Umweltbewusstsein mit Reisefreiheit. Dieser kompakte Kastenwagen für 2 Personen ist mit einer Solaranlage ausgestattet und ermöglicht nachhaltiges Reisen. Die stadtfahrtauglichen Abmessungen machen ihn zum perfekten Begleiter für Städtetrips und Naturerlebnisse.',
         2,
         'B',
         'Dresden',
         95.00,
         '/image/vehicles/poessl-roadcamp/main.png',
         '["/image/vehicles/poessl-roadcamp/gallery1.png", "/image/vehicles/poessl-roadcamp/gallery2.png", "/image/vehicles/poessl-roadcamp/gallery3.png"]',
-        '["Küche", "Bett", "Kompakt", "Stadtfahrtauglich", "Heizung", "Solaranlage", "Kühlschrank"]'
+        '["Küche", "Bett", "Kompakt", "Stadtfahrtauglich", "Heizung", "Solaranlage", "Kühlschrank"]',
+        TRUE,
+        6.8, -- kraftstoffverbrauch
+        88, -- motorleistung
+        'front', -- antriebsart
+        'Euro 6', -- schadstoffklasse
+        1000, -- anhaengerlast
+        2100, -- leergewicht
+        3000 -- gesamtgewicht
     ),
     (
         'Carthago Chic S-Plus',
         'Vollintegriert',
+        'Das Carthago Chic S-Plus steht für absoluten Luxus und Premium-Qualität. Dieses vollintegrierte Wohnmobil bietet 4 Personen erstklassigen Komfort mit Sat-TV, Mikrowelle und Geschirrspüler. Die hochwertige Ausstattung und das elegante Design machen es zur ersten Wahl für anspruchsvolle Reisende.',
         4,
         'C1',
         'Düsseldorf',
         165.00,
         '/image/vehicles/carthago-chic-s-plus/main.png',
         '["/image/vehicles/carthago-chic-s-plus/gallery1.png", "/image/vehicles/carthago-chic-s-plus/gallery2.png", "/image/vehicles/carthago-chic-s-plus/gallery3.png"]',
-        '["Küche", "Bett", "Dusche", "WC", "Sitzgruppe", "Klimaanlage", "Luxus-Ausstattung", "Sat-TV", "Kühlschrank", "Mikrowelle", "Geschirrspüler"]'
+        '["Küche", "Bett", "Dusche", "WC", "Sitzgruppe", "Klimaanlage", "Luxus-Ausstattung", "Sat-TV", "Kühlschrank", "Mikrowelle", "Geschirrspüler"]',
+        FALSE,
+        12.1, -- kraftstoffverbrauch
+        180, -- motorleistung
+        'rear', -- antriebsart
+        'Euro 6', -- schadstoffklasse
+        3500, -- anhaengerlast
+        4500, -- leergewicht
+        5500 -- gesamtgewicht
     ),
     (
         'Laika Ecovip',
         'Teilintegriert',
+        'Der Laika Ecovip ist das perfekte Wohnmobil für umweltbewusste Reisende. Mit seiner Solaranlage ermöglicht er nachhaltiges und autarkes Camping für bis zu 3 Personen. Das durchdachte Raumkonzept und die hochwertige Ausstattung sorgen für Komfort bei gleichzeitig geringem ökologischem Fußabdruck.',
         3,
         'B',
         'Leipzig',
         115.00,
         '/image/vehicles/laika-ecovip/main.png',
         '["/image/vehicles/laika-ecovip/gallery1.png", "/image/vehicles/laika-ecovip/gallery2.png", "/image/vehicles/laika-ecovip/gallery3.png"]',
-        '["Küche", "Bett", "Dusche", "WC", "Sitzgruppe", "Solaranlage", "Heizung", "Kühlschrank"]'
+        '["Küche", "Bett", "Dusche", "WC", "Sitzgruppe", "Solaranlage", "Heizung", "Kühlschrank"]',
+        TRUE,
+        8.0, -- kraftstoffverbrauch
+        115, -- motorleistung
+        'front', -- antriebsart
+        'Euro 6', -- schadstoffklasse
+        1600, -- anhaengerlast
+        2900, -- leergewicht
+        3700 -- gesamtgewicht
     ),
     (
         'Hobby Optima Deluxe',
         'Alkoven',
+        'Das Hobby Optima Deluxe ist das ideale Familien-Wohnmobil für große Gruppen bis zu 6 Personen. Das geräumige Alkoven-Design bietet viel Platz und großen Stauraum für längere Reisen. Mit WLAN-Ausstattung und praktischem Fahrradträger ist es perfekt für moderne Familien ausgestattet.',
         6,
         'C1',
         'Nürnberg',
         140.00,
         '/image/vehicles/hobby-optima-deluxe/main.png',
         '["/image/vehicles/hobby-optima-deluxe/gallery1.png", "/image/vehicles/hobby-optima-deluxe/gallery2.png", "/image/vehicles/hobby-optima-deluxe/gallery3.png", "/image/vehicles/hobby-optima-deluxe/gallery4.png"]',
-        '["Küche", "Bett", "Dusche", "WC", "Sitzgruppe", "Großer Stauraum", "Fahrradträger", "Heizung", "Kühlschrank", "WLAN"]'
+        '["Küche", "Bett", "Dusche", "WC", "Sitzgruppe", "Großer Stauraum", "Fahrradträger", "Heizung", "Kühlschrank", "WLAN"]',
+        TRUE,
+        10.5, -- kraftstoffverbrauch
+        150, -- motorleistung
+        'front', -- antriebsart
+        'Euro 6', -- schadstoffklasse
+        2200, -- anhaengerlast
+        3600, -- leergewicht
+        4400 -- gesamtgewicht
     ),
     (
         'Malibu Van Charming',
         'Kastenwagen',
+        'Der Malibu Van Charming überzeugt durch sein charmantes Design und seine praktische Ausstattung. Dieser kompakte Kastenwagen für 2 Personen ist ideal für romantische Ausflüge und spontane Abenteuer. Seine Stadtfahrtauglichkeit macht ihn zum perfekten Begleiter für vielfältige Reiseziele.',
         2,
         'B',
         'Bremen',
         88.00,
         '/image/vehicles/malibu-van-charming/main.png',
         '["/image/vehicles/malibu-van-charming/gallery1.png", "/image/vehicles/malibu-van-charming/gallery2.png", "/image/vehicles/malibu-van-charming/gallery3.png"]',
-        '["Küche", "Bett", "Kompakt", "Stadtfahrtauglich", "Heizung", "Kühlschrank"]'
+        '["Küche", "Bett", "Kompakt", "Stadtfahrtauglich", "Heizung", "Kühlschrank"]',
+        FALSE,
+        7.5, -- kraftstoffverbrauch
+        90, -- motorleistung
+        'front', -- antriebsart
+        'Euro 6', -- schadstoffklasse
+        1100, -- anhaengerlast
+        2000, -- leergewicht
+        2900 -- gesamtgewicht
     ),
     (
         'Roller Team Zefiro',
         'Teilintegriert',
+        'Der Roller Team Zefiro bietet das optimale Verhältnis von Komfort und Preis für 4 Personen. Dieses teilintegrierte Wohnmobil überzeugt durch seinen durchdachten Grundriss, die praktische Markise und die solide Ausstattung. Perfekt für Familien, die Wert auf Qualität zu einem fairen Preis legen.',
         4,
         'C1',
         'Hannover',
         120.00,
         '/image/vehicles/roller-team-zefiro/main.png',
         '["/image/vehicles/roller-team-zefiro/gallery1.png", "/image/vehicles/roller-team-zefiro/gallery2.png", "/image/vehicles/roller-team-zefiro/gallery3.png"]',
-        '["Küche", "Bett", "Dusche", "WC", "Sitzgruppe", "Heizung", "Markise", "Kühlschrank"]'
+        '["Küche", "Bett", "Dusche", "WC", "Sitzgruppe", "Heizung", "Markise", "Kühlschrank"]',
+        FALSE,
+        8.8, -- kraftstoffverbrauch
+        120, -- motorleistung
+        'front', -- antriebsart
+        'Euro 6', -- schadstoffklasse
+        1700, -- anhaengerlast
+        2850, -- leergewicht
+        3600 -- gesamtgewicht
     ),
     (
         'Sunlight Cliff Adventure',
         'Alkoven',
+        'Das Sunlight Cliff Adventure ist das ultimative Abenteuer-Wohnmobil für große Gruppen bis zu 7 Personen. Mit seiner robusten Ausstattung, WLAN, Rückfahrkamera und großem Stauraum ist es perfekt für ausgedehnte Reisen und Abenteuer in der Natur. Die Kombination aus Komfort und Funktionalität macht es zur idealen Wahl für Großfamilien.',
         7,
         'C1',
         'Dortmund',
         150.00,
         '/image/vehicles/sunlight-cliff-adventure/main.png',
         '["/image/vehicles/sunlight-cliff-adventure/gallery1.png", "/image/vehicles/sunlight-cliff-adventure/gallery2.png", "/image/vehicles/sunlight-cliff-adventure/gallery3.png", "/image/vehicles/sunlight-cliff-adventure/gallery4.png"]',
-        '["Küche", "Bett", "Dusche", "WC", "Sitzgruppe", "Großer Stauraum", "Fahrradträger", "Heizung", "Rückfahrkamera", "Kühlschrank", "WLAN"]'
+        '["Küche", "Bett", "Dusche", "WC", "Sitzgruppe", "Großer Stauraum", "Fahrradträger", "Heizung", "Rückfahrkamera", "Kühlschrank", "WLAN"]',
+        TRUE,
+        11.8, -- kraftstoffverbrauch
+        165, -- motorleistung
+        'front', -- antriebsart
+        'Euro 6', -- schadstoffklasse
+        2300, -- anhaengerlast
+        3900, -- leergewicht
+        4700 -- gesamtgewicht
     );
 
 -- Beispiel-Buchungen für Oktober 2025

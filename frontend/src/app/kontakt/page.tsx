@@ -4,14 +4,14 @@ export default function KontaktPage() {
     return (
         <>
             <Navbar />
-            <div className="pt-24 min-h-screen bg-gray-50">
+            <div className="pt-24 min-h-screen">
                 <div className="container mx-auto px-4 py-16">
-                    <h1 className="text-4xl font-bold text-center mb-8 text-gray-800">Kontakt</h1>
+                    <h1 className="text-4xl font-bold text-center mb-8 text-green-800">Kontakt</h1>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
                         {/* Kontaktinformationen */}
                         <div>
-                            <h2 className="text-2xl font-semibold mb-6 text-gray-800">Kontaktinformationen</h2>
+                            <h2 className="text-2xl font-semibold mb-6 text-green-800">Kontaktinformationen</h2>
 
                             <div className="space-y-6">
                                 <div className="flex items-center gap-4">
@@ -54,7 +54,7 @@ export default function KontaktPage() {
                                     </div>
                                     <div>
                                         <p className="font-medium text-gray-800">E-Mail</p>
-                                        <p className="text-gray-600">info@wohnmobilverleih.de</p>
+                                        <p className="text-gray-600">vanlife.sued@gmail.com</p>
                                     </div>
                                 </div>
 
@@ -120,7 +120,7 @@ export default function KontaktPage() {
 
                         {/* Kontaktformular */}
                         <div>
-                            <h2 className="text-2xl font-semibold mb-6 text-gray-800">Nachricht senden</h2>
+                            <h2 className="text-2xl font-semibold mb-6 text-green-800">Nachricht senden</h2>
 
                             <form className="space-y-6">
                                 <div>

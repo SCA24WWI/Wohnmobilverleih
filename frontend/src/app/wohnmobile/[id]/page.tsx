@@ -19,20 +19,17 @@ interface Vehicle {
     preis_pro_tag: number;
     hauptbild?: string;
     galerie_bilder?: string; // JSON String
+    features?: string[]; // Features aus der Datenbank
+    haustiere_erlaubt?: boolean;
+    kraftstoffverbrauch?: number;
+    motorleistung?: number;
+    antriebsart?: string;
+    schadstoffklasse?: string;
+    anhaengerlast?: number;
+    leergewicht?: number;
+    gesamtgewicht?: number;
     erstellt_am: string;
 }
-
-// Beispiel-Ausstattungsmerkmale (können später dynamisch aus der DB geladen werden)
-const sampleFeatures = [
-    'Küche mit Kühlschrank',
-    'Dusche und WC',
-    'Sitzgruppe',
-    'Betten für Personen',
-    'Außensteckdose',
-    'Markise',
-    'Fahrradträger möglich',
-    'Rückfahrkamera'
-];
 
 const VehicleDetailContent: React.FC = () => {
     const params = useParams();
@@ -72,7 +69,45 @@ const VehicleDetailContent: React.FC = () => {
                 }
 
                 const data = await response.json();
-                setVehicle(data);
+
+                // Features aus der Datenbank verarbeiten
+                let processedFeatures: string[];
+                if (data.features) {
+                    try {
+                        if (Array.isArray(data.features)) {
+                            processedFeatures = data.features;
+                        } else if (typeof data.features === 'string') {
+                            processedFeatures = JSON.parse(data.features);
+                        }
+                    } catch (parseError) {
+                        console.warn('Fehler beim Parsen der Features:', parseError);
+                        processedFeatures = [];
+                    }
+                }
+
+                // Vehicle-Objekt mit verarbeiteten Features setzen
+                setVehicle({
+                    id: data.id,
+                    name: data.name,
+                    modell: data.modell,
+                    beschreibung: data.beschreibung,
+                    bettenzahl: data.bettenzahl,
+                    fuehrerschein: data.fuehrerschein,
+                    ort: data.ort,
+                    preis_pro_tag: data.preis_pro_tag,
+                    hauptbild: data.hauptbild,
+                    galerie_bilder: data.galerie_bilder,
+                    features: data.features,
+                    haustiere_erlaubt: data.haustiere_erlaubt,
+                    kraftstoffverbrauch: data.kraftstoffverbrauch,
+                    motorleistung: data.motorleistung,
+                    antriebsart: data.antriebsart,
+                    schadstoffklasse: data.schadstoffklasse,
+                    anhaengerlast: data.anhaengerlast,
+                    leergewicht: data.leergewicht,
+                    gesamtgewicht: data.gesamtgewicht,
+                    erstellt_am: data.erstellt_am
+                });
 
                 // Bilder aus Datenbank verarbeiten
                 const allImages: string[] = [];
@@ -242,7 +277,7 @@ const VehicleDetailContent: React.FC = () => {
     return (
         <>
             <Navbar />
-            <div className="min-h-screen bg-gray-50 pt-24">
+            <div className="min-h-screen pt-24">
                 <div className="max-w-6xl mx-auto px-4 py-8">
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         {/* Linke Spalte: Bilder und Details */}
@@ -325,7 +360,7 @@ const VehicleDetailContent: React.FC = () => {
                             <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
                                 <div className="flex items-start justify-between mb-6">
                                     <div>
-                                        <h1 className="text-3xl font-bold text-gray-900 mb-2">{vehicle.name}</h1>
+                                        <h1 className="text-3xl font-bold text-green-800 mb-2">{vehicle.name}</h1>
                                         <p className="text-lg text-gray-600">{vehicle.modell}</p>
                                         <p className="text-sm text-gray-500 flex items-center mt-2">
                                             <span className="mr-2">📍</span> {vehicle.ort}
@@ -339,7 +374,7 @@ const VehicleDetailContent: React.FC = () => {
 
                                 {/* Beschreibung */}
                                 <div className="mb-6">
-                                    <h2 className="text-xl font-semibold mb-3">Beschreibung</h2>
+                                    <h2 className="text-xl font-semibold mb-3 text-green-800">Beschreibung</h2>
                                     <p className="text-gray-700 leading-relaxed">
                                         {vehicle.beschreibung ||
                                             'Dieses komfortable Wohnmobil bietet alles, was Sie für einen unvergesslichen Urlaub benötigen. Perfekt ausgestattet für Ihre Reise mit Familie oder Freunden.'}
@@ -347,10 +382,10 @@ const VehicleDetailContent: React.FC = () => {
                                 </div>
 
                                 {/* Grunddaten */}
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
                                     <div className="text-center p-4 bg-gray-50 rounded-lg">
                                         <div className="text-2xl mb-2">👥</div>
-                                        <div className="font-semibold">{vehicle.bettenzahl} Personen</div>
+                                        <div className="font-semibold">{vehicle.bettenzahl} Gäste</div>
                                         <div className="text-sm text-gray-600">Schlafplätze</div>
                                     </div>
                                     <div className="text-center p-4 bg-gray-50 rounded-lg">
@@ -368,18 +403,104 @@ const VehicleDetailContent: React.FC = () => {
                                         <div className="font-semibold">{vehicle.ort}</div>
                                         <div className="text-sm text-gray-600">Standort</div>
                                     </div>
+                                    <div className="text-center p-4 bg-gray-50 rounded-lg">
+                                        <div className="text-2xl mb-2">🐾</div>
+                                        <div className="font-semibold">
+                                            {vehicle.haustiere_erlaubt ? 'Erlaubt' : 'Verboten'}
+                                        </div>
+                                        <div className="text-sm text-gray-600">Haustiere</div>
+                                    </div>
                                 </div>
 
                                 {/* Ausstattung */}
-                                <div>
-                                    <h2 className="text-xl font-semibold mb-4">Ausstattung</h2>
+                                <div className="mb-8">
+                                    <h2 className="text-xl font-semibold mb-4 text-green-800">Ausstattung</h2>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                        {sampleFeatures.map((feature, index) => (
-                                            <div key={index} className="flex items-center">
-                                                <span className="text-green-500 mr-3">✓</span>
-                                                <span className="text-gray-700">{feature}</span>
+                                        {vehicle.features && vehicle.features.length > 0 ? (
+                                            vehicle.features.map((feature: string, index: number) => (
+                                                <div key={index} className="flex items-center">
+                                                    <span className="text-green-500 mr-3">✓</span>
+                                                    <span className="text-gray-700">{feature}</span>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="text-gray-500 col-span-full">
+                                                Keine Ausstattungsinformationen verfügbar.
                                             </div>
-                                        ))}
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Technische Daten */}
+                                <div className="mb-8">
+                                    <h2 className="text-xl font-semibold mb-4 text-green-800">Technische Daten</h2>
+                                    <div className="bg-gray-50 rounded-lg p-6">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="space-y-4">
+                                                <div className="flex justify-between items-center border-b border-gray-200 pb-2">
+                                                    <span className="text-gray-600">Kraftstoffverbrauch:</span>
+                                                    <span className="font-medium text-gray-900">
+                                                        {vehicle.kraftstoffverbrauch
+                                                            ? `${vehicle.kraftstoffverbrauch} L/100km`
+                                                            : 'Keine Angabe'}
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between items-center border-b border-gray-200 pb-2">
+                                                    <span className="text-gray-600">Motorleistung:</span>
+                                                    <span className="font-medium text-gray-900">
+                                                        {vehicle.motorleistung
+                                                            ? `${vehicle.motorleistung} kW`
+                                                            : 'Keine Angabe'}
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between items-center border-b border-gray-200 pb-2">
+                                                    <span className="text-gray-600">Antriebsart:</span>
+                                                    <span className="font-medium text-gray-900">
+                                                        {vehicle.antriebsart
+                                                            ? vehicle.antriebsart === 'front'
+                                                                ? 'Frontantrieb'
+                                                                : vehicle.antriebsart === 'rear'
+                                                                ? 'Heckantrieb'
+                                                                : vehicle.antriebsart === 'all'
+                                                                ? 'Allradantrieb'
+                                                                : vehicle.antriebsart
+                                                            : 'Keine Angabe'}
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-gray-600">Schadstoffklasse:</span>
+                                                    <span className="font-medium text-gray-900">
+                                                        {vehicle.schadstoffklasse || 'Keine Angabe'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-4">
+                                                <div className="flex justify-between items-center border-b border-gray-200 pb-2">
+                                                    <span className="text-gray-600">Anhängerlast:</span>
+                                                    <span className="font-medium text-gray-900">
+                                                        {vehicle.anhaengerlast
+                                                            ? `${vehicle.anhaengerlast} kg`
+                                                            : 'Keine Angabe'}
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between items-center border-b border-gray-200 pb-2">
+                                                    <span className="text-gray-600">Leergewicht:</span>
+                                                    <span className="font-medium text-gray-900">
+                                                        {vehicle.leergewicht
+                                                            ? `${vehicle.leergewicht} kg`
+                                                            : 'Keine Angabe'}
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-gray-600">Gesamtgewicht:</span>
+                                                    <span className="font-medium text-gray-900">
+                                                        {vehicle.gesamtgewicht
+                                                            ? `${vehicle.gesamtgewicht} kg`
+                                                            : 'Keine Angabe'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -398,7 +519,7 @@ const VehicleDetailContent: React.FC = () => {
                             <div className="sticky top-32">
                                 {/* Datums-Auswahl */}
                                 <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-                                    <h2 className="text-xl font-semibold mb-4">📅 Reisedaten wählen</h2>
+                                    <h2 className="text-xl font-semibold mb-4 text-green-800">📅 Reisedaten wählen</h2>
 
                                     <div className="space-y-4">
                                         <div>

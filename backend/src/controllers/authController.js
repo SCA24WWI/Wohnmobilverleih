@@ -8,10 +8,10 @@ const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_key';
 // Registrierung
 const register = async (req, res) => {
     try {
-        const { email, passwort, vorname, nachname, rolle } = req.body;
+        const { email, passwort, vorname, nachname } = req.body;
 
         // Validierung
-        if (!email || !passwort || !vorname || !nachname || !rolle) {
+        if (!email || !passwort || !vorname || !nachname) {
             return res.status(400).json({ message: 'Alle Felder sind erforderlich' });
         }
 
@@ -28,8 +28,8 @@ const register = async (req, res) => {
 
         // Benutzer in Datenbank speichern
         const newUser = await pool.query(
-            'INSERT INTO benutzer (email, passwort_hash, vorname, nachname, rolle) VALUES ($1, $2, $3, $4, $5) RETURNING id, email, vorname, nachname, rolle',
-            [email, hashedPassword, vorname, nachname, rolle]
+            'INSERT INTO benutzer (email, passwort_hash, vorname, nachname) VALUES ($1, $2, $3, $4) RETURNING id, email, vorname, nachname',
+            [email, hashedPassword, vorname, nachname]
         );
 
         // JWT Token erstellen
@@ -58,7 +58,7 @@ const login = async (req, res) => {
 
         // Benutzer suchen
         const user = await pool.query(
-            'SELECT id, email, passwort_hash, vorname, nachname, rolle FROM benutzer WHERE email = $1',
+            'SELECT id, email, passwort_hash, vorname, nachname FROM benutzer WHERE email = $1',
             [email]
         );
 

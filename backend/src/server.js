@@ -10,6 +10,7 @@ const vehicleRoutes = require('./routes/vehicleRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
 const userRoutes = require('./routes/userRoutes');
 const authRoutes = require('./routes/authRoutes');
+const emailRoutes = require('./routes/emailRoutes');
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.use('/api/vehicles', vehicleRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/email', emailRoutes);
 
 // Error Handling Middleware
 app.use(notFound); // Handle 404 errors

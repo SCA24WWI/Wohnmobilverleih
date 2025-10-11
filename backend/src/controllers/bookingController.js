@@ -1,4 +1,5 @@
 const pool = require('../config/database');
+const EmailService = require('../utils/emailService');
 
 /**
  * Professioneller Booking Controller
@@ -216,8 +217,8 @@ class BookingController {
             const bookingResult = await client.query(
                 `INSERT INTO buchungen (
                     wohnmobil_id, kunde_id, start_datum, end_datum, 
-                    anzahl_naechte, gesamtpreis, extras, notizen, status, gebucht_am
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'angefragt', NOW())
+                    anzahl_naechte, gesamtpreis, extras, notizen, gebucht_am
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
                 RETURNING *`,
                 [
                     vehicleId,
@@ -247,6 +248,17 @@ class BookingController {
             );
 
             await client.query('COMMIT');
+
+            // E-Mail-Service für Buchungsbestätigung
+            try {
+                const emailService = new EmailService();
+                const emailResult = await emailService.sendBookingConfirmation(detailsResult.rows[0]);
+                console.log('Buchungsbestätigung versendet:', emailResult.messageId);
+            } catch (emailError) {
+                // E-Mail-Fehler soll die Buchung nicht blockieren
+                console.error('Fehler beim Versenden der Buchungsbestätigung:', emailError.message);
+                // Optional: E-Mail-Fehler in der Datenbank protokollieren
+            }
 
             res.status(201).json({
                 success: true,
@@ -411,8 +423,8 @@ class BookingController {
                     id, wohnmobil_id, kunde_id,
                     TO_CHAR(start_datum, 'YYYY-MM-DD') as start_datum,
                     TO_CHAR(end_datum, 'YYYY-MM-DD') as end_datum,
-                    anzahl_naechte, gesamtpreis, status, extras, notizen,
-                    stornierung_grund, storniert_am, gebucht_am, geaendert_am
+                    anzahl_naechte, gesamtpreis, extras, notizen,
+                    gebucht_am, geaendert_am
                  FROM buchungen 
                  WHERE wohnmobil_id = $1`,
                 [id]

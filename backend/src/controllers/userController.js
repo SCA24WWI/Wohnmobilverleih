@@ -4,7 +4,7 @@ class UserController {
     // Alle Benutzer abrufen
     static async getAllUsers(req, res) {
         try {
-            const alleBenutzer = await pool.query('SELECT id, email, vorname, nachname, rolle FROM benutzer');
+            const alleBenutzer = await pool.query('SELECT id, email, vorname, nachname FROM benutzer');
             res.json(alleBenutzer.rows);
         } catch (err) {
             console.error(err.message);
@@ -16,10 +16,7 @@ class UserController {
     static async getUserById(req, res) {
         try {
             const { id } = req.params;
-            const benutzer = await pool.query(
-                'SELECT id, email, vorname, nachname, rolle FROM benutzer WHERE id = $1',
-                [id]
-            );
+            const benutzer = await pool.query('SELECT id, email, vorname, nachname FROM benutzer WHERE id = $1', [id]);
 
             if (benutzer.rows.length === 0) {
                 return res.status(404).json({ message: 'Benutzer nicht gefunden' });
@@ -82,7 +79,7 @@ class UserController {
             const { id } = req.params;
             const { email, vorname, nachname } = req.body;
             const updateBenutzer = await pool.query(
-                'UPDATE benutzer SET email = $1, vorname = $2, nachname = $3 WHERE id = $4 RETURNING id, email, vorname, nachname, rolle',
+                'UPDATE benutzer SET email = $1, vorname = $2, nachname = $3 WHERE id = $4 RETURNING id, email, vorname, nachname',
                 [email, vorname, nachname, id]
             );
 

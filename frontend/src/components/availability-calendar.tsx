@@ -23,7 +23,6 @@ interface Booking {
     start_datum: string;
     end_datum: string;
     gesamtpreis: number;
-    status: string;
     extras?: string;
     erstellt_am: string;
 }
@@ -63,13 +62,9 @@ const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
 
                 const bookings: Booking[] = await response.json();
 
-                // Nur bestätigte und angefragte Buchungen berücksichtigen
-                const confirmedBookings = bookings.filter(
-                    (booking) => booking.status === 'bestätigt' || booking.status === 'angefragt'
-                );
-
+                // Alle Buchungen berücksichtigen (da es keinen Status mehr gibt)
                 // Buchungen in das erwartete Format konvertieren (mit korrekter Datumsbehandlung)
-                const bookedDateRanges: BookedDate[] = confirmedBookings.map((booking) => {
+                const bookedDateRanges: BookedDate[] = bookings.map((booking) => {
                     // UTC-Timestamps zu lokalen Daten konvertieren
                     const startDate = new Date(booking.start_datum);
                     const endDate = new Date(booking.end_datum);
@@ -83,15 +78,7 @@ const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
                 setBookedDates(bookedDateRanges);
             } catch (err) {
                 setError('Buchungen konnten nicht geladen werden');
-
-                // Fallback auf Mockdaten bei Fehler
-                const mockBookedDates: BookedDate[] = [
-                    { start_date: '2025-10-15', end_date: '2025-10-18' },
-                    { start_date: '2025-10-25', end_date: '2025-10-28' },
-                    { start_date: '2025-11-05', end_date: '2025-11-08' },
-                    { start_date: '2025-11-20', end_date: '2025-11-22' }
-                ];
-                setBookedDates(mockBookedDates);
+                setBookedDates([]);
             } finally {
                 setLoading(false);
             }

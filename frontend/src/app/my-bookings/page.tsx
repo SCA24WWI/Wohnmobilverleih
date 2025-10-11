@@ -16,7 +16,6 @@ interface Booking {
     end_datum: string;
     anzahl_naechte: number;
     gesamtpreis: number;
-    status: 'angefragt' | 'bestätigt' | 'storniert' | 'abgeschlossen' | 'abgelehnt';
     extras: string[] | null;
     notizen: string | null;
     gebucht_am: string;
@@ -28,52 +27,12 @@ interface Booking {
     hauptbild?: string;
 }
 
-const statusColors = {
-    angefragt: 'bg-yellow-100 text-yellow-800',
-    bestätigt: 'bg-green-100 text-green-800',
-    storniert: 'bg-red-100 text-red-800',
-    abgeschlossen: 'bg-blue-100 text-blue-800',
-    abgelehnt: 'bg-gray-100 text-gray-800'
-};
-
-const statusLabels = {
-    angefragt: 'Angefragt',
-    bestätigt: 'Bestätigt',
-    storniert: 'Storniert',
-    abgeschlossen: 'Abgeschlossen',
-    abgelehnt: 'Abgelehnt'
-};
-
 const MyBookingsPage: React.FC = () => {
     const { user, loading: authLoading } = useAuth();
     const router = useRouter();
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [filter, setFilter] = useState<string>('alle');
-
-    // Get display text for empty state
-    const getEmptyStateText = (currentFilter: string) => {
-        if (currentFilter === 'alle') {
-            return {
-                title: 'Keine Buchungen gefunden',
-                description: 'Sie haben noch keine Buchungen vorgenommen.'
-            };
-        }
-
-        const statusLabel = statusLabels[currentFilter as keyof typeof statusLabels];
-        if (statusLabel) {
-            return {
-                title: `Keine ${statusLabel.toLowerCase()}en Buchungen`,
-                description: `Sie haben keine Buchungen mit dem Status "${statusLabel}".`
-            };
-        }
-
-        return {
-            title: 'Keine Buchungen gefunden',
-            description: 'Für diesen Filter wurden keine Buchungen gefunden.'
-        };
-    };
 
     // Authentication check
     useEffect(() => {
@@ -123,12 +82,6 @@ const MyBookingsPage: React.FC = () => {
         }
     }, [user]);
 
-    // Filtered bookings
-    const filteredBookings = bookings.filter((booking) => {
-        if (filter === 'alle') return true;
-        return booking.status === filter;
-    });
-
     // Format date
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('de-DE', {
@@ -146,11 +99,26 @@ const MyBookingsPage: React.FC = () => {
         }).format(price);
     };
 
+    // Determine booking status based on dates (simple logic)
+    const getBookingStatus = (booking: Booking) => {
+        const today = new Date();
+        const startDate = new Date(booking.start_datum);
+        const endDate = new Date(booking.end_datum);
+
+        if (endDate < today) {
+            return { label: 'Abgeschlossen', color: 'bg-gray-100 text-gray-800' };
+        } else if (startDate <= today && endDate >= today) {
+            return { label: 'Aktiv', color: 'bg-green-100 text-green-800' };
+        } else {
+            return { label: 'Geplant', color: 'bg-blue-100 text-blue-800' };
+        }
+    };
+
     if (authLoading || loading) {
         return (
             <>
                 <Navbar />
-                <div className="min-h-screen bg-gray-50 pt-24 flex items-center justify-center">
+                <div className="min-h-screen pt-24 flex items-center justify-center">
                     <div className="text-center">
                         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-600 mx-auto"></div>
                         <p className="mt-4 text-gray-600">
@@ -162,101 +130,61 @@ const MyBookingsPage: React.FC = () => {
         );
     }
 
-    if (!user) {
-        return null;
-    }
-
     return (
         <>
             <Navbar />
-            <div className="min-h-screen bg-gray-50 pt-24">
+            <div className="min-h-screen pt-24">
                 <div className="max-w-6xl mx-auto px-4 py-8">
-                    {/* Header */}
                     <div className="mb-8">
-                        <h1 className="text-3xl font-bold text-gray-900">Meine Buchungen</h1>
-                        <p className="text-gray-600 mt-2">Hier finden Sie alle Ihre Wohnmobil-Buchungen im Überblick</p>
+                        <h1 className="text-3xl font-bold text-green-800 mb-2">Meine Buchungen</h1>
+                        <p className="text-gray-600">Hier finden Sie eine Übersicht all Ihrer Buchungen.</p>
                     </div>
 
-                    {/* Filter */}
-                    <div className="mb-6">
-                        <div className="flex flex-wrap gap-2">
-                            {['alle', 'angefragt', 'bestätigt', 'abgeschlossen', 'storniert'].map((status) => (
-                                <button
-                                    key={status}
-                                    onClick={() => setFilter(status)}
-                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                                        filter === status
-                                            ? 'bg-green-600 text-white'
-                                            : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
-                                    }`}
-                                >
-                                    {status === 'alle' ? 'Alle' : statusLabels[status as keyof typeof statusLabels]}
-                                    {status !== 'alle' && (
-                                        <span className="ml-2 text-xs opacity-75">
-                                            ({bookings.filter((b) => b.status === status).length})
-                                        </span>
-                                    )}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Error handling */}
                     {error && (
-                        <div className="mb-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                            {error}
+                        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+                            <p className="font-medium">Fehler beim Laden der Buchungen</p>
+                            <p className="text-sm">{error}</p>
                         </div>
                     )}
 
-                    {/* Bookings list */}
-                    {filteredBookings.length === 0 ? (
-                        <div className="bg-white rounded-lg shadow-lg p-12 text-center">
-                            <div className="text-gray-400 text-6xl mb-4">🚐</div>
-                            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                                {getEmptyStateText(filter).title}
-                            </h3>
-                            <p className="text-gray-600 mb-6">{getEmptyStateText(filter).description}</p>
-                            <a
-                                href="/wohnmobile"
-                                className="inline-block bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors"
-                            >
-                                Wohnmobile entdecken
-                            </a>
+                    <div className="bg-white rounded-lg shadow-sm">
+                        <div className="px-6 py-4 border-b border-gray-200">
+                            <div className="flex justify-between items-center">
+                                <h2 className="text-xl font-semibold text-gray-900">
+                                    Alle Buchungen ({bookings.length})
+                                </h2>
+                            </div>
                         </div>
-                    ) : (
-                        <div className="space-y-6">
-                            {filteredBookings.map((booking) => (
-                                <div key={booking.id} className="bg-white rounded-lg shadow-lg overflow-hidden">
-                                    <div className="p-6">
-                                        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
-                                            <div className="mb-2 md:mb-0">
-                                                <h3 className="text-xl font-semibold text-gray-900">
-                                                    {booking.vehicle_name || `Wohnmobil #${booking.wohnmobil_id}`}
-                                                </h3>
-                                                <p className="text-gray-600">{booking.modell}</p>
-                                            </div>
-                                            <div className="flex items-center space-x-4">
-                                                <span
-                                                    className={`px-3 py-1 rounded-full text-sm font-medium ${
-                                                        statusColors[booking.status]
-                                                    }`}
-                                                >
-                                                    {statusLabels[booking.status]}
-                                                </span>
-                                                <span className="text-sm text-gray-500">Buchung #{booking.id}</span>
-                                            </div>
-                                        </div>
 
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                            {/* Vehicle image */}
-                                            <div className="md:col-span-1">
-                                                <div className="aspect-video bg-gray-200 rounded-lg overflow-hidden">
+                        {bookings.length === 0 ? (
+                            <div className="px-6 py-12 text-center">
+                                <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <span className="text-3xl">🚐</span>
+                                </div>
+                                <h3 className="text-lg font-medium text-gray-900 mb-2">Keine Buchungen gefunden</h3>
+                                <p className="text-gray-600 mb-6">Sie haben noch keine Buchungen vorgenommen.</p>
+                                <button
+                                    onClick={() => router.push('/wohnmobile')}
+                                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                                >
+                                    Wohnmobile entdecken
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="divide-y divide-gray-200">
+                                {bookings.map((booking) => {
+                                    const status = getBookingStatus(booking);
+                                    return (
+                                        <div key={booking.id} className="px-6 py-6">
+                                            <div className="flex flex-col lg:flex-row lg:items-center gap-6">
+                                                {/* Vehicle Image */}
+                                                <div className="w-full lg:w-48 h-32 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
                                                     {booking.hauptbild ? (
                                                         <Image
                                                             src={booking.hauptbild}
-                                                            alt={booking.vehicle_name || 'Motorhome'}
-                                                            width={300}
-                                                            height={200}
+                                                            alt={booking.vehicle_name || 'Wohnmobil'}
+                                                            width={192}
+                                                            height={128}
                                                             className="w-full h-full object-cover"
                                                         />
                                                     ) : (
@@ -265,111 +193,95 @@ const MyBookingsPage: React.FC = () => {
                                                         </div>
                                                     )}
                                                 </div>
-                                            </div>
 
-                                            {/* Booking details */}
-                                            <div className="md:col-span-2">
-                                                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-                                                    <div>
-                                                        <span className="font-medium text-gray-700">Anreise:</span>
-                                                        <p className="text-gray-900">
-                                                            {formatDate(booking.start_datum)}
-                                                        </p>
-                                                    </div>
-                                                    <div>
-                                                        <span className="font-medium text-gray-700">Abreise:</span>
-                                                        <p className="text-gray-900">{formatDate(booking.end_datum)}</p>
-                                                    </div>
-                                                    <div>
-                                                        <span className="font-medium text-gray-700">Nächte:</span>
-                                                        <p className="text-gray-900">
-                                                            {booking.anzahl_naechte || 'N/A'}
-                                                        </p>
-                                                    </div>
-                                                    <div>
-                                                        <span className="font-medium text-gray-700">Gesamtpreis:</span>
-                                                        <p className="text-gray-900 font-semibold">
-                                                            {formatPrice(booking.gesamtpreis)}
-                                                        </p>
-                                                    </div>
-                                                    <div>
-                                                        <span className="font-medium text-gray-700">Gebucht am:</span>
-                                                        <p className="text-gray-900">
-                                                            {formatDate(booking.gebucht_am)}
-                                                        </p>
-                                                    </div>
-                                                    {booking.preis_pro_tag && (
-                                                        <div>
-                                                            <span className="font-medium text-gray-700">
-                                                                Preis/Tag:
-                                                            </span>
-                                                            <p className="text-gray-900">
-                                                                {formatPrice(booking.preis_pro_tag)}
-                                                            </p>
-                                                        </div>
-                                                    )}
-                                                </div>
-
-                                                {/* Extras */}
-                                                {booking.extras && booking.extras.length > 0 && (
-                                                    <div className="mt-4">
-                                                        <span className="font-medium text-gray-700">Extras:</span>
-                                                        <div className="flex flex-wrap gap-1 mt-1">
-                                                            {booking.extras.map((extra, index) => (
+                                                {/* Booking Details */}
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                                                        <div className="flex-1">
+                                                            <div className="flex items-center gap-3 mb-2">
+                                                                <h3 className="text-lg font-semibold text-gray-900 truncate">
+                                                                    {booking.vehicle_name || 'Unbekanntes Fahrzeug'}
+                                                                </h3>
                                                                 <span
-                                                                    key={index}
-                                                                    className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded"
+                                                                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${status.color}`}
                                                                 >
-                                                                    {extra}
+                                                                    {status.label}
                                                                 </span>
-                                                            ))}
+                                                            </div>
+
+                                                            {booking.modell && (
+                                                                <p className="text-sm text-gray-600 mb-3">
+                                                                    {booking.modell}
+                                                                </p>
+                                                            )}
+
+                                                            <div className="grid grid-cols-2 gap-4 text-sm">
+                                                                <div>
+                                                                    <p className="text-gray-500">Anreise:</p>
+                                                                    <p className="font-medium">
+                                                                        {formatDate(booking.start_datum)}
+                                                                    </p>
+                                                                </div>
+                                                                <div>
+                                                                    <p className="text-gray-500">Abreise:</p>
+                                                                    <p className="font-medium">
+                                                                        {formatDate(booking.end_datum)}
+                                                                    </p>
+                                                                </div>
+                                                                <div>
+                                                                    <p className="text-gray-500">Dauer:</p>
+                                                                    <p className="font-medium">
+                                                                        {booking.anzahl_naechte} Nächte
+                                                                    </p>
+                                                                </div>
+                                                                <div>
+                                                                    <p className="text-gray-500">Gebucht am:</p>
+                                                                    <p className="font-medium">
+                                                                        {formatDate(booking.gebucht_am)}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+
+                                                            {booking.notizen && (
+                                                                <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                                                                    <p className="text-sm text-gray-600">
+                                                                        <span className="font-medium">Notizen: </span>
+                                                                        {booking.notizen}
+                                                                    </p>
+                                                                </div>
+                                                            )}
+                                                        </div>
+
+                                                        <div className="flex flex-col items-end gap-3">
+                                                            <div className="text-right">
+                                                                <p className="text-2xl font-bold text-green-600">
+                                                                    {formatPrice(booking.gesamtpreis)}
+                                                                </p>
+                                                                <p className="text-sm text-gray-500">Gesamtpreis</p>
+                                                            </div>
+
+                                                            <div className="flex gap-2">
+                                                                <button
+                                                                    onClick={() =>
+                                                                        router.push(
+                                                                            `/wohnmobile/${booking.wohnmobil_id}`
+                                                                        )
+                                                                    }
+                                                                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+                                                                >
+                                                                    Details ansehen
+                                                                </button>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                )}
-
-                                                {/* Notes */}
-                                                {booking.notizen && (
-                                                    <div className="mt-4">
-                                                        <span className="font-medium text-gray-700">Notizen:</span>
-                                                        <p className="text-gray-600 text-sm mt-1">{booking.notizen}</p>
-                                                    </div>
-                                                )}
+                                                </div>
                                             </div>
                                         </div>
-
-                                        {/* Actions */}
-                                        <div className="mt-6 flex flex-wrap gap-3 border-t pt-4">
-                                            <a
-                                                href={`/wohnmobile/${booking.wohnmobil_id}`}
-                                                className="text-green-600 hover:text-green-700 text-sm font-medium"
-                                            >
-                                                Fahrzeug ansehen
-                                            </a>
-                                            {booking.status === 'bestätigt' && (
-                                                <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-                                                    Buchungsdetails
-                                                </button>
-                                            )}
-                                            {(booking.status === 'angefragt' || booking.status === 'bestätigt') && (
-                                                <button className="text-red-600 hover:text-red-700 text-sm font-medium">
-                                                    Stornieren
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-
-                    {/* Pagination could be added here */}
-                    {filteredBookings.length > 0 && (
-                        <div className="mt-8 text-center">
-                            <p className="text-gray-600">
-                                {filteredBookings.length} von {bookings.length} Buchungen angezeigt
-                            </p>
-                        </div>
-                    )}
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
             <Footer />

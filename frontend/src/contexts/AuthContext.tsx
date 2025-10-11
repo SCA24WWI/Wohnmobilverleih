@@ -12,7 +12,6 @@ interface User {
     plz?: string;
     ort?: string;
     geburtsdatum?: string;
-    rolle: 'kunde' | 'anbieter' | 'admin';
 }
 
 interface AuthContextType {
@@ -34,7 +33,6 @@ interface RegisterData {
     plz: string;
     ort: string;
     geburtsdatum: string;
-    rolle: 'kunde' | 'anbieter';
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);

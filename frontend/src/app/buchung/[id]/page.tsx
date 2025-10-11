@@ -358,7 +358,7 @@ const BookingPage: React.FC = () => {
         return (
             <>
                 <Navbar />
-                <div className="min-h-screen bg-gray-50 pt-24 flex items-center justify-center">
+                <div className="min-h-screen pt-24 flex items-center justify-center">
                     <div className="text-center">
                         <p className="text-red-600 text-xl">{error}</p>
                         <button
@@ -377,11 +377,11 @@ const BookingPage: React.FC = () => {
     return (
         <>
             <Navbar />
-            <div className="min-h-screen bg-gray-50 pt-24">
+            <div className="min-h-screen pt-24">
                 <div className="max-w-6xl mx-auto px-4 py-8">
                     {/* Header */}
                     <div className="mb-8">
-                        <h1 className="text-3xl font-bold text-gray-900">Buchung für {vehicle?.name}</h1>
+                        <h1 className="text-3xl font-bold text-green-800">Buchung für {vehicle?.name}</h1>
                         <p className="text-gray-600 mt-2">Füllen Sie alle Felder aus um Ihre Buchung abzuschließen</p>
                     </div>
 

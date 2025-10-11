@@ -4,7 +4,36 @@ class VehicleController {
     // Wohnmobile suchen mit Filtern
     static async searchVehicles(req, res) {
         try {
-            const { location, guests, dateFrom, dateTo, page = 1, limit = 6 } = req.query;
+            const {
+                location,
+                guests,
+                guestMode = 'exact', // Neuer Parameter für Gäste-Modus (Standard: genau)
+                dateFrom,
+                dateTo,
+                page = 1,
+                limit = 6,
+                pets,
+                kitchen,
+                wifi,
+                bathroom,
+                airConditioning,
+                transmission,
+                priceMin,
+                priceMax,
+                // Technische Daten Filter
+                fuelConsumptionMin,
+                fuelConsumptionMax,
+                enginePowerMin,
+                enginePowerMax,
+                driveType,
+                emissionClass,
+                trailerLoadMin,
+                trailerLoadMax,
+                emptyWeightMin,
+                emptyWeightMax,
+                totalWeightMin,
+                totalWeightMax
+            } = req.query;
 
             const pageNumber = parseInt(page) || 1;
             const limitNumber = parseInt(limit) || 6;
@@ -20,6 +49,108 @@ class VehicleController {
                 }
             }
 
+            // Dynamische WHERE-Bedingungen für erweiterte Filter
+            let additionalFilters = '';
+            let paramIndex = 4;
+            const additionalParams = [];
+
+            // Features-Filter basierend auf JSONB-Feld und Boolean-Spalten
+            if (pets === 'true') {
+                additionalFilters += ` AND w.haustiere_erlaubt = true`;
+            }
+            if (kitchen === 'true') {
+                additionalFilters += ` AND LOWER(w.features::text) LIKE '%küche%'`;
+            }
+            if (wifi === 'true') {
+                additionalFilters += ` AND (LOWER(w.features::text) LIKE '%wlan%' OR LOWER(w.features::text) LIKE '%wifi%')`;
+            }
+            if (bathroom === 'true') {
+                additionalFilters += ` AND (LOWER(w.features::text) LIKE '%dusche%' OR LOWER(w.features::text) LIKE '%wc%' OR LOWER(w.features::text) LIKE '%bad%')`;
+            }
+            if (airConditioning === 'true') {
+                additionalFilters += ` AND LOWER(w.features::text) LIKE '%klimaanlage%'`;
+            }
+
+            // Preis-Filter
+            if (priceMin) {
+                additionalFilters += ` AND w.preis_pro_tag >= $${++paramIndex}`;
+                additionalParams.push(parseFloat(priceMin));
+            }
+            if (priceMax) {
+                additionalFilters += ` AND w.preis_pro_tag <= $${++paramIndex}`;
+                additionalParams.push(parseFloat(priceMax));
+            }
+
+            // Technische Daten Filter
+            // Kraftstoffverbrauch
+            if (fuelConsumptionMin) {
+                additionalFilters += ` AND w.kraftstoffverbrauch >= $${++paramIndex}`;
+                additionalParams.push(parseFloat(fuelConsumptionMin));
+            }
+            if (fuelConsumptionMax) {
+                additionalFilters += ` AND w.kraftstoffverbrauch <= $${++paramIndex}`;
+                additionalParams.push(parseFloat(fuelConsumptionMax));
+            }
+
+            // Motorleistung
+            if (enginePowerMin) {
+                additionalFilters += ` AND w.motorleistung >= $${++paramIndex}`;
+                additionalParams.push(parseFloat(enginePowerMin));
+            }
+            if (enginePowerMax) {
+                additionalFilters += ` AND w.motorleistung <= $${++paramIndex}`;
+                additionalParams.push(parseFloat(enginePowerMax));
+            }
+
+            // Antriebsart
+            if (driveType) {
+                additionalFilters += ` AND w.antriebsart = $${++paramIndex}`;
+                additionalParams.push(driveType);
+            }
+
+            // Schadstoffklasse
+            if (emissionClass) {
+                additionalFilters += ` AND w.schadstoffklasse = $${++paramIndex}`;
+                additionalParams.push(emissionClass);
+            }
+
+            // Anhängerlast
+            if (trailerLoadMin) {
+                additionalFilters += ` AND w.anhaengerlast >= $${++paramIndex}`;
+                additionalParams.push(parseFloat(trailerLoadMin));
+            }
+            if (trailerLoadMax) {
+                additionalFilters += ` AND w.anhaengerlast <= $${++paramIndex}`;
+                additionalParams.push(parseFloat(trailerLoadMax));
+            }
+
+            // Leergewicht
+            if (emptyWeightMin) {
+                additionalFilters += ` AND w.leergewicht >= $${++paramIndex}`;
+                additionalParams.push(parseFloat(emptyWeightMin));
+            }
+            if (emptyWeightMax) {
+                additionalFilters += ` AND w.leergewicht <= $${++paramIndex}`;
+                additionalParams.push(parseFloat(emptyWeightMax));
+            }
+
+            // Gesamtgewicht
+            if (totalWeightMin) {
+                additionalFilters += ` AND w.gesamtgewicht >= $${++paramIndex}`;
+                additionalParams.push(parseFloat(totalWeightMin));
+            }
+            if (totalWeightMax) {
+                additionalFilters += ` AND w.gesamtgewicht <= $${++paramIndex}`;
+                additionalParams.push(parseFloat(totalWeightMax));
+            }
+
+            // Gäste-Filter basierend auf Modus
+            const guestCondition = guests
+                ? guestMode === 'exact'
+                    ? 'w.bettenzahl = $1::INTEGER'
+                    : 'w.bettenzahl >= $1::INTEGER'
+                : '($1::INTEGER IS NULL OR TRUE)';
+
             const countQuery = `
                 SELECT COUNT(DISTINCT w.id) as total
                 FROM wohnmobile w
@@ -27,7 +158,7 @@ class VehicleController {
                     AND b.end_datum > $3::DATE
                     AND b.start_datum < $4::DATE
                 WHERE
-                    (w.bettenzahl >= $1 OR $1 IS NULL)
+                    (${guestCondition})
                 AND
                     (
                         LOWER(w.ort) LIKE LOWER($2) OR
@@ -35,6 +166,7 @@ class VehicleController {
                     )
                 AND
                     ( ($3 IS NULL OR $4 IS NULL) OR b.id IS NULL )
+                ${additionalFilters}
             `;
 
             const dataQuery = `
@@ -44,7 +176,7 @@ class VehicleController {
                     AND b.end_datum > $3::DATE
                     AND b.start_datum < $4::DATE
                 WHERE
-                    (w.bettenzahl >= $1 OR $1 IS NULL)
+                    (${guestCondition})
                 AND
                     (
                         LOWER(w.ort) LIKE LOWER($2) OR
@@ -52,22 +184,24 @@ class VehicleController {
                     )
                 AND
                     ( ($3 IS NULL OR $4 IS NULL) OR b.id IS NULL )
+                ${additionalFilters}
                 ORDER BY w.preis_pro_tag ASC
-                LIMIT $5 OFFSET $6
+                LIMIT $${paramIndex + 1} OFFSET $${paramIndex + 2}
             `;
 
-            const queryParams = [
+            const baseParams = [
                 parseInt(guests) || null,
                 location ? `%${location.trim()}%` : '%%',
                 dateFrom || null,
                 dateTo || null
             ];
 
-            const countResult = await pool.query(countQuery, queryParams);
+            const countQueryParams = [...baseParams, ...additionalParams];
+            const countResult = await pool.query(countQuery, countQueryParams);
             const totalVehicles = parseInt(countResult.rows[0].total);
             const totalPages = Math.ceil(totalVehicles / limitNumber);
 
-            const dataQueryParams = [...queryParams, limitNumber, offset];
+            const dataQueryParams = [...baseParams, ...additionalParams, limitNumber, offset];
             const dataResult = await pool.query(dataQuery, dataQueryParams);
 
             res.status(200).json({

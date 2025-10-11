@@ -20,7 +20,6 @@ export default function AuthPage() {
         plz: '',
         ort: '',
         geburtsdatum: '',
-        rolle: '',
         rememberMe: false,
         agbAccepted: false
     });
@@ -82,8 +81,7 @@ export default function AuthPage() {
                     adresse: formData.adresse,
                     plz: formData.plz,
                     ort: formData.ort,
-                    geburtsdatum: formData.geburtsdatum,
-                    rolle: formData.rolle as 'kunde' | 'anbieter'
+                    geburtsdatum: formData.geburtsdatum
                 });
 
                 if (success) {
@@ -103,7 +101,7 @@ export default function AuthPage() {
     return (
         <>
             <Navbar />
-            <div className="pt-24 min-h-screen bg-gray-50">
+            <div className="pt-24 min-h-screen">
                 <div className="container mx-auto px-4 py-16">
                     <div className="max-w-md mx-auto bg-white rounded-lg shadow-lg p-8">
                         {/* Toggle Buttons */}
@@ -132,7 +130,7 @@ export default function AuthPage() {
                             </button>
                         </div>
 
-                        <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">
+                        <h1 className="text-3xl font-bold text-center mb-8 text-green-800">
                             {isLogin ? 'Anmelden' : 'Registrieren'}
                         </h1>
 
@@ -302,7 +300,7 @@ export default function AuthPage() {
                                 />
                             </div>
 
-                            {/* Registrierung - Passwort bestätigen und Rolle */}
+                            {/* Registrierung - Passwort bestätigen */}
                             {!isLogin && (
                                 <>
                                     <div>
@@ -318,20 +316,6 @@ export default function AuthPage() {
                                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                                             placeholder="Passwort wiederholen"
                                         />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Rolle</label>
-                                        <select
-                                            name="rolle"
-                                            value={formData.rolle}
-                                            onChange={handleInputChange}
-                                            required={!isLogin}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                                        >
-                                            <option value="">Rolle auswählen</option>
-                                            <option value="kunde">Kunde</option>
-                                            <option value="anbieter">Anbieter</option>
-                                        </select>
                                     </div>
                                 </>
                             )}
