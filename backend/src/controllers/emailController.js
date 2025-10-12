@@ -144,6 +144,61 @@ class EmailController {
             const bookingData = bookingResult.rows[0];
             const emailService = new EmailService();
 
+            // Extras formatieren für Vorschau
+            let extrasText = '';
+            if (bookingData.extras) {
+                const parsedExtras =
+                    typeof bookingData.extras === 'string' ? JSON.parse(bookingData.extras) : bookingData.extras;
+
+                if (parsedExtras.extras && Array.isArray(parsedExtras.extras) && parsedExtras.extras.length > 0) {
+                    extrasText += '<h3>📋 Zusatzleistungen:</h3><ul>';
+                    parsedExtras.extras.forEach((extra) => {
+                        // Behandle sowohl String als auch Objekt-Format
+                        if (typeof extra === 'string') {
+                            // String-Format: "campingmoebel" -> "Campingmöbel"
+                            const extraName = emailService.formatExtraName(extra);
+                            extrasText += `<li>${extraName}</li>`;
+                        } else if (extra && (extra.name || extra.title)) {
+                            // Objekt-Format: {name: "GPS", preis: 5}
+                            const name = extra.name || extra.title;
+                            const preis = extra.preis || extra.price || 0;
+                            if (preis > 0) {
+                                extrasText += `<li>${name} - ${preis}€</li>`;
+                            } else {
+                                extrasText += `<li>${name}</li>`;
+                            }
+                        }
+                    });
+                    extrasText += '</ul>';
+                }
+
+                if (parsedExtras.versicherung) {
+                    if (typeof parsedExtras.versicherung === 'string') {
+                        extrasText += `<h3>🛡️ Versicherung:</h3><p>${parsedExtras.versicherung}</p>`;
+                    } else if (parsedExtras.versicherung.name || parsedExtras.versicherung.title) {
+                        const name = parsedExtras.versicherung.name || parsedExtras.versicherung.title;
+                        const preis = parsedExtras.versicherung.preis || parsedExtras.versicherung.price;
+                        if (preis) {
+                            extrasText += `<h3>🛡️ Versicherung:</h3><p>${name} - ${preis}€</p>`;
+                        } else {
+                            extrasText += `<h3>🛡️ Versicherung:</h3><p>${name}</p>`;
+                        }
+                    }
+                }
+
+                if (parsedExtras.zahlungsmethode) {
+                    let zahlungsmethode = '';
+                    if (typeof parsedExtras.zahlungsmethode === 'string') {
+                        zahlungsmethode = parsedExtras.zahlungsmethode;
+                    } else if (parsedExtras.zahlungsmethode.name || parsedExtras.zahlungsmethode.title) {
+                        zahlungsmethode = parsedExtras.zahlungsmethode.name || parsedExtras.zahlungsmethode.title;
+                    }
+                    if (zahlungsmethode) {
+                        extrasText += `<h3>💳 Zahlungsmethode:</h3><p>${zahlungsmethode}</p>`;
+                    }
+                }
+            }
+
             // HTML-Vorschau generieren ohne E-Mail zu versenden
             const htmlPreview = emailService.generateBookingConfirmationHTML({
                 vorname: bookingData.vorname,
@@ -155,9 +210,8 @@ class EmailController {
                 endDate: new Date(bookingData.end_datum).toLocaleDateString('de-DE'),
                 anzahl_naechte: bookingData.anzahl_naechte,
                 gesamtpreis: bookingData.gesamtpreis,
-                extrasText: emailService.formatExtrasForEmail(bookingData.extras)
+                extrasText: extrasText
             });
-
             res.setHeader('Content-Type', 'text/html');
             res.send(htmlPreview);
         } catch (error) {

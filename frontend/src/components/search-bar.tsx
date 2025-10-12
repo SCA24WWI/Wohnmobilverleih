@@ -243,14 +243,14 @@ export function SearchBar({ quickbook = true, onSearch, onSearchResults, initial
         bathroom: false,
         airConditioning: false,
         transmission: '',
-        fuelConsumption: { min: 0, max: 50 },
-        enginePower: { min: 0, max: 500 },
+        fuelConsumption: undefined, // Keine Standard-Werte für technische Filter
+        enginePower: undefined,
         driveType: '',
         emissionClass: '',
-        towingCapacity: { min: 0, max: 5000 },
-        emptyWeight: { min: 0, max: 10000 },
-        maxWeight: { min: 0, max: 15000 },
-        priceRange: { min: 0, max: 1000 }
+        towingCapacity: undefined,
+        emptyWeight: undefined,
+        maxWeight: undefined,
+        priceRange: undefined
     });
 
     // useEffect um initialFilters zu laden
@@ -381,9 +381,9 @@ export function SearchBar({ quickbook = true, onSearch, onSearchResults, initial
     ];
 
     return (
-        <div className="w-full flex justify-center px-4 relative z-10">
-            <Card className="w-fit shadow-2xl bg-white/95 backdrop-blur-sm">
-                <CardBody className="pt-6 pb-6 px-10">
+        <div className="w-full flex justify-center px-2 sm:px-4 relative z-10">
+            <Card className="w-full max-w-7xl xl:max-w-none shadow-2xl bg-white/95 backdrop-blur-sm xl:min-w-[1400px]">
+                <CardBody className="pt-4 pb-4 px-3 sm:px-6 lg:px-8 xl:px-12">
                     <form
                         className="space-y-6"
                         onSubmit={(e) => {
@@ -397,9 +397,9 @@ export function SearchBar({ quickbook = true, onSearch, onSearchResults, initial
                             }
                         }}
                     >
-                        <div className="flex flex-col xl:flex-row items-stretch xl:items-center gap-4 xl:gap-6 min-w-fit">
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-12 gap-4 items-end">
                             {/* Ort */}
-                            <div className="flex-1 min-w-[200px] relative">
+                            <div className="md:col-span-1 xl:col-span-2 relative">
                                 <MapPinIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
                                 <Input
                                     placeholder="Wo startest du?"
@@ -412,8 +412,8 @@ export function SearchBar({ quickbook = true, onSearch, onSearchResults, initial
                                 />
                             </div>
 
-                            {/* Datum */}
-                            <div className="flex-1 flex gap-2">
+                            {/* Datum Von */}
+                            <div className="md:col-span-1 xl:col-span-2">
                                 <Input
                                     type="date"
                                     label="Von"
@@ -422,6 +422,10 @@ export function SearchBar({ quickbook = true, onSearch, onSearchResults, initial
                                     containerProps={{ className: 'h-12' }}
                                     crossOrigin={undefined}
                                 />
+                            </div>
+
+                            {/* Datum Bis */}
+                            <div className="md:col-span-1 xl:col-span-2">
                                 <Input
                                     type="date"
                                     label="Bis"
@@ -433,7 +437,7 @@ export function SearchBar({ quickbook = true, onSearch, onSearchResults, initial
                             </div>
 
                             {/* Gäste */}
-                            <div className="flex-shrink-0 ">
+                            <div className="md:col-span-1 xl:col-span-3">
                                 <Menu open={guestMenuOpen} handler={setGuestMenuOpen}>
                                     <MenuHandler>
                                         <div className="relative cursor-pointer">
@@ -510,30 +514,37 @@ export function SearchBar({ quickbook = true, onSearch, onSearchResults, initial
                                 </Menu>
                             </div>
 
-                            {/* Filter Toggle */}
-                            {!quickbook && (
-                                <Button
-                                    type="button"
-                                    variant="outlined"
-                                    size="lg"
-                                    onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                                    className="flex-shrink-0 h-12 px-4 flex items-center justify-center gap-2 normal-case text-base font-semibold border-gray-300 text-gray-700 hover:bg-gray-50"
-                                >
-                                    <AdjustmentsHorizontalIcon className="h-5 w-5" />
-                                    {showAdvancedFilters ? 'Weniger Filter' : 'Mehr Filter'}
-                                </Button>
-                            )}
-
-                            {/* Suchen Button */}
-                            <Button
-                                type="submit"
-                                size="lg"
-                                disabled={isSearching}
-                                className="flex-shrink-0 bg-green-800 hover:bg-green-600 disabled:bg-gray-400 transition-colors duration-200 h-12 px-8 flex items-center justify-center gap-2 normal-case text-base font-semibold whitespace-nowrap"
-                            >
-                                <MagnifyingGlassIcon className="h-5 w-5" />
-                                {isSearching ? 'Suche...' : 'Camper finden'}
-                            </Button>
+                            {/* Buttons Container - Responsive Layout */}
+                            <div className="col-span-1 md:col-span-2 xl:col-span-3 grid grid-cols-2 gap-2">
+                                {!quickbook && (
+                                    <div className="col-span-1">
+                                        <Button
+                                            type="button"
+                                            variant="outlined"
+                                            size="lg"
+                                            onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                                            className="w-full h-12 px-2 flex items-center justify-center gap-1 normal-case text-base font-semibold border-gray-300 text-gray-700 hover:bg-gray-50"
+                                        >
+                                            <AdjustmentsHorizontalIcon className="h-5 w-5" />
+                                            <span className="hidden xl:inline text-sm">Filter</span>
+                                        </Button>
+                                    </div>
+                                )}
+                                <div className={!quickbook ? 'col-span-1' : 'col-span-2'}>
+                                    <Button
+                                        type="submit"
+                                        size="lg"
+                                        disabled={isSearching}
+                                        className="w-full bg-green-800 hover:bg-green-600 disabled:bg-gray-400 transition-colors duration-200 h-12 px-4 flex items-center justify-center gap-2 normal-case text-base font-semibold"
+                                    >
+                                        <MagnifyingGlassIcon className="h-5 w-5" />
+                                        <span className="hidden sm:inline text-base">
+                                            {isSearching ? 'Suche...' : 'Camper finden'}
+                                        </span>
+                                        <span className="sm:hidden text-sm">Suchen</span>
+                                    </Button>
+                                </div>
+                            </div>
                         </div>
 
                         {/* Erweiterte Filter */}

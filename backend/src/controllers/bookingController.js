@@ -3,7 +3,7 @@ const EmailService = require('../utils/emailService');
 
 /**
  * Professioneller Booking Controller
- * Implementiert erweiterte Buchungslogik für Wohnmobil-Verleih
+ * Implementiert erweiterte Buchungslogik für Vanlife Süd
  */
 class BookingController {
     /**

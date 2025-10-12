@@ -1,17 +1,29 @@
-import { Typography, Button, Input } from '@material-tailwind/react';
+import { Typography } from '@material-tailwind/react';
 
 const LINKS = [
     {
-        title: 'Company',
-        items: ['About Us', 'Careers', 'Premium Tools', 'Blog']
+        title: 'Unternehmen',
+        items: [
+            { label: 'Über uns', href: '/ueber-uns' },
+            { label: 'Kontakt', href: '/kontakt' },
+            { label: 'Standorte', href: '/kontakt#standorte' }
+        ]
     },
     {
-        title: 'Pages',
-        items: ['Login', 'Register', 'Add List', 'Contact']
+        title: 'Service',
+        items: [
+            { label: 'Wohnmobile', href: '/wohnmobile' },
+            { label: 'Meine Buchungen', href: '/my-bookings' },
+            { label: 'Anmeldung', href: '/auth' }
+        ]
     },
     {
         title: 'Legal',
-        items: ['Terms', 'Privacy', 'Team', 'About Us']
+        items: [
+            { label: 'Impressum', href: '#' },
+            { label: 'Datenschutz', href: '#' },
+            { label: 'AGB', href: '#' }
+        ]
     }
 ];
 
@@ -21,57 +33,52 @@ export function Footer() {
     return (
         <footer className="px-8 pt-24 pb-8 bg-blue-gray-800">
             <div className="container max-w-6xl flex flex-col mx-auto">
-                <div className="grid grid-cols-1 lg:grid-cols-3 !w-full ">
-                    <div className="flex col-span-2 items-center gap-10 mb-10 lg:mb-0 md:gap-36">
+                <div className="grid grid-cols-1 lg:grid-cols-3 !w-full">
+                    <div className="flex col-span-2 items-start gap-10 mb-10 lg:mb-0 md:gap-36">
                         {LINKS.map(({ title, items }) => (
                             <ul key={title}>
                                 <Typography variant="h6" color="white" className="mb-4">
                                     {title}
                                 </Typography>
-                                {items.map((link) => (
-                                    <li key={link}>
+                                {items.map(({ label, href }) => (
+                                    <li key={label}>
                                         <Typography
                                             as="a"
-                                            href="#"
+                                            href={href}
                                             className="py-1 font-normal !text-blue-gray-300 transition-colors hover:!text-white"
                                         >
-                                            {link}
+                                            {label}
                                         </Typography>
                                     </li>
                                 ))}
                             </ul>
                         ))}
                     </div>
-                    <div className="">
+                    <div>
                         <Typography variant="h6" className="mb-3 text-left text-white">
-                            Subscribe
+                            Kontakt
                         </Typography>
                         <Typography className="!text-blue-gray-300 font-normal mb-4 text-base">
-                            Get access to subscriber exclusive deals and be the first who gets informed about fresh
-                            sales.
+                            Vanlife Süd - Ihr Partner für unvergessliche Wohnmobil-Abenteuer seit 2019.
                         </Typography>
-                        <Typography variant="small" className="font-medium mb-2 text-left text-white">
-                            Your Email
-                        </Typography>
-                        <div className="flex mb-3 flex-col lg:flex-row items-start gap-4">
-                            <div className="w-full">
-                                {/* @ts-ignore */}
-                                <Input label="Email" color="gray" />
-                                <Typography className="font-medium mt-3 !text-sm !text-blue-gray-300 text-left">
-                                    I agree the{' '}
-                                    <a href="#" className="font-bold underline hover:text-white transition-colors">
-                                        Terms and Conditions{' '}
-                                    </a>
-                                </Typography>
-                            </div>
-                            <Button color="white" className="w-full lg:w-fit" size="md">
-                                Subscribe
-                            </Button>
+                        <div className="space-y-2">
+                            <Typography className="!text-blue-gray-300 font-normal text-sm">
+                                📍 München, Deutschland
+                            </Typography>
+                            <Typography className="!text-blue-gray-300 font-normal text-sm">
+                                📞 +49 89 123 456 789
+                            </Typography>
+                            <Typography className="!text-blue-gray-300 font-normal text-sm">
+                                ✉️ info@vanlife-sued.de
+                            </Typography>
+                            <Typography className="!text-blue-gray-300 font-normal text-sm">
+                                🕒 Mo-Fr: 8:00-19:00, Sa: 9:00-17:00
+                            </Typography>
                         </div>
                     </div>
                 </div>
                 <Typography color="blue-gray" className="md:text-center mt-16 font-normal !text-blue-gray-300">
-                    &copy; {CURRENT_YEAR} Made with Next.js by Jannis Köllner and Hai Viet Vu.
+                    &copy; {CURRENT_YEAR} Vanlife Süd. Entwickelt von Jannis Köllner und Hai Viet Vu.
                 </Typography>
             </div>
         </footer>

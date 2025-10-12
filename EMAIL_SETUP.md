@@ -1,269 +1,114 @@
-# E-Mail Buchungsbestätigung - Implementierungsdokumentation
+# 📧 E-Mail System - Vanlife Süd
 
-## Übersicht
+E-Mail-Service für Buchungsbestätigungen und Passwort-Reset mit Gmail SMTP Integration.
 
-Das E-Mail-System sendet automatisch Buchungsbestätigungen an Kunden nach einer erfolgreichen Buchung. Die E-Mails enthalten alle relevanten Buchungsdetails in einem professionellen HTML-Format.
+## ✨ Features
 
-## Implementierte Funktionen
+-   📤 **Buchungsbestätigungen** per E-Mail
+-   🔑 **Passwort-Reset** Links per E-Mail
+-   🧪 **E-Mail Testing** Endpunkte
+-   🔄 **Fallback-Logging** für Development
 
-### 1. Automatische Buchungsbestätigung
+## 🚀 Setup
 
--   **Trigger**: Nach jeder erfolgreichen Buchung
--   **Empfänger**: E-Mail-Adresse des Kunden aus der Rechnungsadresse
--   **Inhalt**: Vollständige Buchungsdetails mit HTML-Formatierung
+### 1. Gmail App-Passwort erstellen
 
-### 2. E-Mail-Template
+1. Google Account → **2-Faktor-Authentifizierung** aktivieren
+2. **App-Passwörter** → Neues App-Passwort generieren
+3. App-Passwort kopieren (16 Zeichen)
 
--   **Format**: Professionelles HTML-Design
--   **Inhalte**:
-    -   Buchungsnummer
-    -   Fahrzeugdaten (Name, Modell)
-    -   Zeitraum (Abhol- und Rückgabedatum)
-    -   Anzahl Nächte
-    -   Zusatzleistungen (Extras, Versicherung, Zahlungsmethode)
-    -   Gesamtpreis
-    -   Kontaktinformationen
-    -   Wichtige Hinweise
-
-### 3. Fehlerbehandlung
-
--   E-Mail-Fehler blockieren die Buchung **nicht**
--   Fehler werden in der Konsole protokolliert
--   Buchung wird erfolgreich abgeschlossen, auch wenn E-Mail fehlschlägt
-
-## Setup-Anleitung
-
-### Schritt 1: E-Mail-Provider konfigurieren
-
-#### Gmail (empfohlen für Entwicklung)
-
-1. Gehen Sie zu [Google-Konto Einstellungen](https://myaccount.google.com)
-2. Navigieren Sie zu "Sicherheit"
-3. Aktivieren Sie "Bestätigung in zwei Schritten"
-4. Erstellen Sie ein "App-Passwort":
-    - Suchen Sie nach "App-Passwörter"
-    - Wählen Sie "Mail" als App
-    - Kopieren Sie das 16-stellige Passwort
-
-#### .env Datei aktualisieren
+### 2. Environment Variablen (.env)
 
 ```env
-# Gmail Konfiguration
-EMAIL_USER=ihre-email@gmail.com
-EMAIL_PASSWORD=ihr-16-stelliges-app-passwort
-EMAIL_FROM=ihre-email@gmail.com
+# E-Mail Konfiguration
+EMAIL_USER=your-email@gmail.com
+EMAIL_PASSWORD=your-16-char-app-password
+EMAIL_FROM="Vanlife Süd <noreply@vanlife-sued.de>"
 ```
 
-### Schritt 2: Alternative E-Mail-Provider
-
-#### Outlook/Hotmail
-
-```env
-EMAIL_HOST=smtp-mail.outlook.com
-EMAIL_PORT=587
-EMAIL_SECURE=false
-EMAIL_USER=ihre-email@outlook.com
-EMAIL_PASSWORD=ihr-passwort
-```
-
-#### Eigener SMTP-Server
-
-```env
-EMAIL_HOST=mail.ihredomain.de
-EMAIL_PORT=587
-EMAIL_SECURE=false
-EMAIL_USER=buchungen@ihredomain.de
-EMAIL_PASSWORD=ihr-passwort
-```
-
-### Schritt 3: E-Mail-Service anpassen
-
-Bearbeiten Sie `src/utils/emailService.js` für:
-
--   **Firmenadresse** im Template
--   **Kontaktdaten** (Telefon, E-Mail)
--   **Öffnungszeiten**
--   **Corporate Design** (Farben, Logo)
-
-## Test-Endpoints
-
-### E-Mail-Konfiguration testen
+## 📁 Projektstruktur
 
 ```
+backend/src/
+├── controllers/
+│   ├── emailController.js     # E-Mail API Controller
+│   └── authController.js      # Passwort-Reset Integration
+├── utils/
+│   └── emailService.js        # Gmail SMTP Service
+├── routes/
+│   └── emailRoutes.js         # E-Mail Test Endpunkte
+└── server.js
+```
+
+## 🔗 API Endpunkte
+
+### Test E-Mail Konfiguration
+
+```http
 GET /api/email/test-config
 ```
 
-Prüft, ob alle E-Mail-Umgebungsvariablen gesetzt sind.
+### Test E-Mail versenden
 
-### Test-E-Mail versenden
-
-```
+```http
 POST /api/email/test-email
 Content-Type: application/json
 
 {
-  "email": "test@example.com"
+  "to": "test@example.com",
+  "subject": "Test E-Mail",
+  "text": "Test Nachricht"
 }
 ```
 
-### Buchungsbestätigung erneut versenden
+### Buchungsbestätigung versenden
 
-```
-POST /api/email/resend-confirmation/123
-```
+Automatisch beim Erstellen einer Buchung über `/api/bookings`
 
-Versendet die Buchungsbestätigung für Buchung ID 123 erneut.
+### Passwort-Reset E-Mail
 
-## Sicherheitshinweise
+```http
+POST /api/auth/request-password-reset
+Content-Type: application/json
 
-### 1. E-Mail-Credentials
-
--   **Niemals** echte Passwörter im Code speichern
--   Verwenden Sie App-Passwörter für Gmail
--   Überprüfen Sie `.env` in `.gitignore`
-
-### 2. Ratenbegrenzung
-
-```javascript
-// Für Produktionsumgebung empfohlen:
-const rateLimit = require('express-rate-limit');
-
-const emailLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 Minuten
-    max: 10, // max 10 E-Mails pro IP
-    message: 'Zu viele E-Mail-Anfragen'
-});
-
-app.use('/api/email', emailLimiter);
-```
-
-## Troubleshooting
-
-### Problem: E-Mails werden nicht versendet
-
-#### 1. Konfiguration prüfen
-
-```bash
-GET /api/email/test-config
-```
-
-#### 2. Test-E-Mail senden
-
-```bash
-POST /api/email/test-email
 {
-  "email": "ihre-email@gmail.com"
+  "email": "user@example.com"
 }
 ```
 
-#### 3. Häufige Fehler
+## 🛠️ Development
 
--   **Gmail**: App-Passwort statt normalem Passwort verwenden
--   **Firmen-E-Mail**: SMTP-Einstellungen vom IT-Team erfragen
--   **Umlaute**: UTF-8 Encoding prüfen
+### Fallback für lokale Entwicklung
 
-### Problem: E-Mails landen im Spam
+Ohne E-Mail-Konfiguration werden E-Mails in der Konsole ausgegeben:
 
-#### 1. SPF-Record hinzufügen
-
-```dns
-v=spf1 include:_spf.google.com ~all
+```
+📧 E-Mail würde gesendet werden an: user@example.com
+Betreff: Passwort zurücksetzen
+Inhalt: [E-Mail HTML Content]
 ```
 
-#### 2. DKIM konfigurieren
+### E-Mail Templates
 
-Für eigene Domains SPF und DKIM-Records einrichten.
+-   **Buchungsbestätigung**: Vollständige Buchungsdetails mit Kundeninformationen
+-   **Passwort-Reset**: Sicherer Link mit 1h Gültigkeit
 
-#### 3. E-Mail-Inhalte optimieren
+## 🔧 Troubleshooting
 
--   Weniger Bilder verwenden
--   Spam-Keywords vermeiden
--   Text-zu-HTML-Verhältnis beachten
+### Häufige Probleme
 
-## Erweiterte Funktionen (optional)
+-   **"Invalid credentials"** → App-Passwort statt normalem Passwort verwenden
+-   **"Less secure apps"** → 2-Faktor-Auth + App-Passwort erforderlich
+-   **E-Mails kommen nicht an** → Spam-Ordner prüfen
 
-### 1. E-Mail-Templates anpassen
+### Debug-Modus
 
-Erstellen Sie verschiedene Templates:
-
--   Buchungsbestätigung
--   Buchungserinnerung (24h vor Abholung)
--   Rückgabeerinnerung
--   Stornierungsbestätigung
-
-### 2. PDF-Anhang hinzufügen
-
-```javascript
-const PDFDocument = require('pdfkit');
-
-// PDF-Rechnung erstellen und anhängen
-const doc = new PDFDocument();
-// ... PDF-Generierung
-mailOptions.attachments = [
-    {
-        filename: 'buchungsbestaetigung.pdf',
-        content: doc
-    }
-];
+```env
+NODE_ENV=development
 ```
 
-### 3. E-Mail-Status verfolgen
+Zeigt detaillierte E-Mail-Logs in der Konsole.
 
-```javascript
-// E-Mail-Status in Datenbank speichern
-const emailLogResult = await pool.query(
-    'INSERT INTO email_log (booking_id, email_type, status, sent_at) VALUES ($1, $2, $3, NOW())',
-    [bookingId, 'confirmation', 'sent']
-);
-```
+---
 
-## Produktionshinweise
-
-### 1. E-Mail-Queue implementieren
-
-```javascript
-const Queue = require('bull');
-const emailQueue = new Queue('email processing');
-
-emailQueue.process('confirmation', async (job) => {
-    const { bookingData } = job.data;
-    await emailService.sendBookingConfirmation(bookingData);
-});
-```
-
-### 2. Monitoring
-
--   E-Mail-Erfolgsrate überwachen
--   Fehlerprotokollierung implementieren
--   Delivery-Berichte einrichten
-
-### 3. Backup-Provider
-
-Konfigurieren Sie einen Backup-E-Mail-Provider für Ausfälle:
-
-```javascript
-const primaryProvider = new EmailService();
-const backupProvider = new BackupEmailService();
-
-try {
-    await primaryProvider.send(mailData);
-} catch (error) {
-    await backupProvider.send(mailData);
-}
-```
-
-## Datenschutz (DSGVO)
-
-### E-Mail-Speicherung
-
--   E-Mail-Inhalte nicht länger als nötig speichern
--   Kunden-Einwilligung für Marketing-E-Mails einholen
--   Abmeldefunktion implementieren
-
-## Support
-
-Bei Problemen:
-
-1. Test-Endpoints verwenden
-2. Logs in der Konsole prüfen
-3. E-Mail-Provider-Dokumentation konsultieren
+Entwickelt mit ❤️ von **Jannis Köllner** und **Hai Viet Vu**

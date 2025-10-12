@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Typography } from '@material-tailwind/react';
 import { SearchBar, VehicleCard } from '@/components';
 import { fetchVehicles } from '@/components/search-bar';
@@ -47,6 +47,29 @@ export function VehicleSearch({ quickbook = true, initialFilters }: VehicleSearc
     const [hasSearched, setHasSearched] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [currentFilters, setCurrentFilters] = useState<any>(null);
+
+    // Automatisch alle Fahrzeuge laden wenn keine initialFilters gesetzt sind (für /wohnmobile Seite)
+    useEffect(() => {
+        if (!quickbook && !initialFilters && !hasSearched) {
+            // Lade alle Fahrzeuge ohne Filter
+            const loadAllVehicles = async () => {
+                try {
+                    setIsSearching(true);
+                    setError(null);
+                    const results = await fetchVehicles(undefined, 1);
+                    setVehicleData(results);
+                    setHasSearched(true);
+                    setCurrentFilters(undefined);
+                } catch (err) {
+                    setError('Fehler beim Laden der Fahrzeuge. Bitte versuchen Sie es erneut.');
+                } finally {
+                    setIsSearching(false);
+                }
+            };
+
+            loadAllVehicles();
+        }
+    }, [quickbook, initialFilters, hasSearched]);
 
     // Callback für SearchBar Ergebnisse
     const handleSearchResults = (
@@ -207,8 +230,8 @@ export function VehicleSearch({ quickbook = true, initialFilters }: VehicleSearc
                 <div className="px-4 mb-8">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {vehicleData.vehicles.map((vehicle) => (
-                            <VehicleCard 
-                                key={vehicle.id} 
+                            <VehicleCard
+                                key={vehicle.id}
                                 vehicle={vehicle}
                                 travelDates={
                                     currentFilters?.dateFrom && currentFilters?.dateTo

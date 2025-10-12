@@ -161,7 +161,11 @@ export function VehicleCard({ vehicle, travelDates }: VehicleCardProps) {
                         {vehicle.available ? 'Jetzt buchen' : 'Nicht verfügbar'}
                     </a>
                     <a
-                        href={`/wohnmobile/${vehicle.id}`}
+                        href={
+                            travelDates?.startDate && travelDates?.endDate
+                                ? `/wohnmobile/${vehicle.id}?startDate=${travelDates.startDate}&endDate=${travelDates.endDate}`
+                                : `/wohnmobile/${vehicle.id}`
+                        }
                         className="px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium text-gray-700 hover:border-gray-400 text-center"
                     >
                         Details

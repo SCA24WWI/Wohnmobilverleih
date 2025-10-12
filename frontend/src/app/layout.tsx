@@ -12,7 +12,7 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
-    title: 'Wohnmobil verleih',
+    title: 'Vanlife Süd',
     description:
         'Introducing Tailwind Course Landing Page, a versatile and engaging landing page template designed using Tailwind CSS and Material Tailwind.'
 };

@@ -95,7 +95,7 @@ export function Navbar({ transparent = false }: NavbarProps) {
                             </a>
                         </MenuItem>
                         <MenuItem>
-                            <a href="/profile" className="w-full">
+                            <a href="/profil" className="w-full">
                                 Mein Profil
                             </a>
                         </MenuItem>
@@ -143,8 +143,8 @@ export function Navbar({ transparent = false }: NavbarProps) {
                             transparent ? 'text-white drop-shadow-lg' : 'text-white'
                         }`}
                     >
-                        Wohnmobil
-                        <br /> Verleih
+                        Vanlife
+                        <br /> Süd
                     </Typography>
 
                     {/* Absolut zentrierte NavMenu */}

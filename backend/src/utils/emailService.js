@@ -1,14 +1,13 @@
 const nodemailer = require('nodemailer');
 
 /**
- * E-Mail Service für Wohnmobil-Verleih
+ * E-Mail Service für Vanlife Süd
  * Versendet Buchungsbestätigungen und andere E-Mails
  */
 class EmailService {
     constructor() {
         // Transporter für E-Mail-Versand konfigurieren
         this.transporter = nodemailer.createTransport({
-            // Gmail-Konfiguration (kann für andere Provider angepasst werden)
             service: 'gmail',
             auth: {
                 user: process.env.EMAIL_USER,
@@ -39,8 +38,75 @@ class EmailService {
             const startDate = new Date(start_datum).toLocaleDateString('de-DE');
             const endDate = new Date(end_datum).toLocaleDateString('de-DE');
 
-            // Extras für die E-Mail formatieren
-            const extrasText = this.formatExtrasForEmail(extras);
+            // Extras für die E-Mail formatieren - DIREKT IMPLEMENTIERT
+            let extrasText = '';
+            console.log('Debug - Rohe Extras-Daten:', extras);
+
+            if (extras) {
+                const parsedExtras = typeof extras === 'string' ? JSON.parse(extras) : extras;
+                console.log('Debug - Geparste Extras:', JSON.stringify(parsedExtras, null, 2));
+
+                // Zusatzleistungen verarbeiten
+                if (parsedExtras.extras && Array.isArray(parsedExtras.extras) && parsedExtras.extras.length > 0) {
+                    console.log('Debug - Verarbeite Zusatzleistungen:', parsedExtras.extras.length);
+                    extrasText += '<h3>📋 Zusatzleistungen:</h3><ul>';
+                    parsedExtras.extras.forEach((extra, index) => {
+                        console.log(`Debug - Extra ${index}:`, extra);
+
+                        // Behandle sowohl String als auch Objekt-Format
+                        if (typeof extra === 'string') {
+                            // String-Format: "campingmoebel" -> "Campingmöbel"
+                            const extraName = this.formatExtraName(extra);
+                            extrasText += `<li>${extraName}</li>`;
+                            console.log(`Debug - Extra (String) hinzugefügt: ${extraName}`);
+                        } else if (extra && (extra.name || extra.title)) {
+                            // Objekt-Format: {name: "GPS", preis: 5}
+                            const name = extra.name || extra.title;
+                            const preis = extra.preis || extra.price || 0;
+                            if (preis > 0) {
+                                extrasText += `<li>${name} - ${preis}€</li>`;
+                            } else {
+                                extrasText += `<li>${name}</li>`;
+                            }
+                            console.log(`Debug - Extra (Objekt) hinzugefügt: ${name} - ${preis}€`);
+                        }
+                    });
+                    extrasText += '</ul>';
+                }
+
+                // Versicherung verarbeiten
+                if (parsedExtras.versicherung) {
+                    console.log('Debug - Verarbeite Versicherung:', parsedExtras.versicherung);
+                    if (typeof parsedExtras.versicherung === 'string') {
+                        extrasText += `<h3>🛡️ Versicherung:</h3><p>${parsedExtras.versicherung}</p>`;
+                    } else if (parsedExtras.versicherung.name || parsedExtras.versicherung.title) {
+                        const name = parsedExtras.versicherung.name || parsedExtras.versicherung.title;
+                        const preis = parsedExtras.versicherung.preis || parsedExtras.versicherung.price;
+                        if (preis) {
+                            extrasText += `<h3>🛡️ Versicherung:</h3><p>${name} - ${preis}€</p>`;
+                        } else {
+                            extrasText += `<h3>🛡️ Versicherung:</h3><p>${name}</p>`;
+                        }
+                    }
+                }
+
+                // Zahlungsmethode verarbeiten
+                if (parsedExtras.zahlungsmethode) {
+                    console.log('Debug - Verarbeite Zahlungsmethode:', parsedExtras.zahlungsmethode);
+                    let zahlungsmethode = '';
+                    if (typeof parsedExtras.zahlungsmethode === 'string') {
+                        zahlungsmethode = parsedExtras.zahlungsmethode;
+                    } else if (parsedExtras.zahlungsmethode.name || parsedExtras.zahlungsmethode.title) {
+                        zahlungsmethode = parsedExtras.zahlungsmethode.name || parsedExtras.zahlungsmethode.title;
+                    }
+                    if (zahlungsmethode) {
+                        extrasText += `<h3>💳 Zahlungsmethode:</h3><p>${zahlungsmethode}</p>`;
+                    }
+                }
+            }
+
+            console.log('Debug - Finaler extrasText:', extrasText);
+            console.log('Debug - extrasText Länge:', extrasText.length);
 
             const htmlContent = this.generateBookingConfirmationHTML({
                 vorname,
@@ -201,9 +267,9 @@ class EmailService {
                 <div class="contact-info">
                     <h3>📞 Kontakt & Abholung</h3>
                     <p><strong>Abholzeit:</strong> Montag-Freitag: 9:00-18:00 Uhr, Samstag: 9:00-16:00 Uhr</p>
-                    <p><strong>Adresse:</strong> [Ihre Firmenadresse hier einfügen]</p>
-                    <p><strong>Telefon:</strong> [Ihre Telefonnummer]</p>
-                    <p><strong>E-Mail:</strong> [Ihre E-Mail-Adresse]</p>
+                    <p><strong>Adresse:</strong> Coblitzallee 1-9, 68163 Mannheim</p>
+                    <p><strong>Telefon:</strong> +49 (0) 123 456 789</p>
+                    <p><strong>E-Mail:</strong> vanlife.sued@gmail.com</p>
                 </div>
                 
                 <p><strong>Wichtige Hinweise:</strong></p>
@@ -216,7 +282,7 @@ class EmailService {
                 <div class="footer">
                     <p>Diese E-Mail wurde automatisch generiert. Bei Fragen wenden Sie sich gerne an unser Team.</p>
                     <p>Wir freuen uns auf Ihren Besuch!</p>
-                    <p>Ihr Wohnmobil-Verleih Team</p>
+                    <p>Ihr Vanlife Süd Team</p>
                 </div>
             </div>
         </body>
@@ -225,44 +291,72 @@ class EmailService {
     }
 
     /**
-     * Extras für E-Mail formatieren (Hilfsmethode)
+     * Formatiert Extra-Namen von technischen Bezeichnungen zu benutzerfreundlichen Namen
      */
-    formatExtrasForEmail(extras) {
-        let extrasText = '';
-        if (extras) {
-            const parsedExtras = typeof extras === 'string' ? JSON.parse(extras) : extras;
+    formatExtraName(extraKey) {
+        const extraNames = {
+            campingmoebel: 'Campingmöbel',
+            fahrradtraeger: 'Fahrradträger',
+            grill: 'Grill',
+            gps_navi: 'GPS Navigation',
+            satelliten_tv: 'Satelliten TV',
+            markise: 'Markise',
+            solaranlage: 'Solaranlage',
+            hecktraeger: 'Heckträger',
+            zusaetlicher_tank: 'Zusätzlicher Wassertank',
+            generator: 'Generator',
+            kuehltasche: 'Kühltasche',
+            campingtisch_stuehle: 'Campingtisch & Stühle',
+            bettwaesche: 'Bettwäsche',
+            handtuecher: 'Handtücher'
+        };
 
-            if (parsedExtras.extras && parsedExtras.extras.length > 0) {
-                extrasText += '<h3>Zusatzleistungen:</h3><ul>';
-                parsedExtras.extras.forEach((extra) => {
-                    extrasText += `<li>${extra.name} - ${extra.preis}€</li>`;
-                });
-                extrasText += '</ul>';
-            }
-
-            if (parsedExtras.versicherung) {
-                extrasText += `<h3>Versicherung:</h3><p>${parsedExtras.versicherung.name} - ${parsedExtras.versicherung.preis}€</p>`;
-            }
-
-            if (parsedExtras.zahlungsmethode) {
-                extrasText += `<h3>Zahlungsmethode:</h3><p>${parsedExtras.zahlungsmethode}</p>`;
-            }
-        }
-        return extrasText;
+        return extraNames[extraKey] || extraKey.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
     }
 
     /**
      * Test-E-Mail versenden (für Debugging)
      */
+    /**
+     * Generische E-Mail-Versendung
+     */
+    async sendEmail(to, subject, htmlContent) {
+        try {
+            const mailOptions = {
+                from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+                to: to,
+                subject: subject,
+                html: htmlContent
+            };
+
+            console.log('Sende E-Mail mit Optionen:', {
+                from: mailOptions.from,
+                to: mailOptions.to,
+                subject: mailOptions.subject
+            });
+
+            const info = await this.transporter.sendMail(mailOptions);
+            console.log('E-Mail erfolgreich gesendet:', info.messageId);
+
+            return {
+                success: true,
+                messageId: info.messageId
+            };
+        } catch (error) {
+            console.error('Fehler beim Versenden der E-Mail:', error);
+            throw error;
+        }
+    }
+
     async sendTestEmail(recipientEmail) {
         try {
             const mailOptions = {
                 from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
                 to: recipientEmail,
-                subject: 'Test E-Mail - Wohnmobil-Verleih System',
+                subject: 'Test E-Mail - Vanlife Süd System',
                 html: `
                     <h2>Test E-Mail</h2>
-                    <p>Dies ist eine Test-E-Mail vom Wohnmobil-Verleih System.</p>
+                    <p>Dies ist eine Test-E-Mail vom Vanlife Süd System.</p>
                     <p>Wenn Sie diese E-Mail erhalten, funktioniert der E-Mail-Service korrekt.</p>
                     <p>Zeitstempel: ${new Date().toLocaleString('de-DE')}</p>
                 `

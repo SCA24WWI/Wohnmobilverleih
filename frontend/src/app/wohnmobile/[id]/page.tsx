@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { Navbar, Footer, ToastProvider, useToast } from '@/components';
 import AvailabilityCalendar from '@/components/availability-calendar';
@@ -34,6 +34,7 @@ interface Vehicle {
 const VehicleDetailContent: React.FC = () => {
     const params = useParams();
     const router = useRouter();
+    const searchParams = useSearchParams();
     const vehicleId = params.id as string;
     const { showError, showWarning } = useToast();
 
@@ -51,11 +52,28 @@ const VehicleDetailContent: React.FC = () => {
     //TODO: ein bild auf dem steht "kein bild vorhanden" zweimal
     // Fallback-Bilder falls keine Bilder in der DB vorhanden sind
     const fallbackImages = [
-        '/image/blogs/camper_alle_budget.png',
-        '/image/blogs/Camper_Family.png',
-        '/image/blogs/Camper_paare.png',
-        '/image/blogs/Camper_haustiererlaubnis.png'
+        'https://www.dropbox.com/scl/fi/9gfmnjwmsxr6drx75lbuc/camper_alle_budget.png?rlkey=kwo5cc6vroaawt9daykgl52z2&st=r9epusuu&dl=1',
+        'https://www.dropbox.com/scl/fi/861yjkj7qojbe9wshp0x6/Camper_Family.png?rlkey=8libegu5102yhke48gsvv63cn&st=hd0bqhwi&dl=1',
+        'https://www.dropbox.com/scl/fi/mlkwflj2dohpczyj0i4ka/Camper_paare.png?rlkey=qtzqc3tsw90at6kfynokrkl0p&st=h7lcp234&dl=1',
+        'https://www.dropbox.com/scl/fi/fafjo2faikcnlxodtmovf/Camper_haustiererlaubnis.png?rlkey=avkcnna25xb3vm1yxfmrt657i&st=0pscq5q1&dl=1'
     ];
+
+    // URL-Parameter für Datumsvorauswahl laden
+    useEffect(() => {
+        const urlStartDate = searchParams.get('startDate');
+        const urlEndDate = searchParams.get('endDate');
+
+        if (urlStartDate && urlEndDate) {
+            // Validiere die Datumsformate
+            const startDateObj = new Date(urlStartDate);
+            const endDateObj = new Date(urlEndDate);
+
+            if (!isNaN(startDateObj.getTime()) && !isNaN(endDateObj.getTime()) && startDateObj < endDateObj) {
+                setStartDate(urlStartDate);
+                setEndDate(urlEndDate);
+            }
+        }
+    }, [searchParams]);
 
     // Fahrzeugdaten laden
     useEffect(() => {

@@ -7,8 +7,13 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function AuthPage() {
     const [isLogin, setIsLogin] = useState(true);
+    const [showPasswordReset, setShowPasswordReset] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
+    const [resetEmail, setResetEmail] = useState('');
+    const [resetError, setResetError] = useState('');
+    const [resetLoading, setResetLoading] = useState(false);
     const [formData, setFormData] = useState({
         email: '',
         passwort: '',
@@ -98,6 +103,45 @@ export default function AuthPage() {
         }
     };
 
+    const handlePasswordReset = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setResetError('');
+        setResetLoading(true);
+
+        try {
+            const response = await fetch('http://localhost:3001/api/auth/request-password-reset', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email: resetEmail })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // Modal sofort schließen
+                setShowPasswordReset(false);
+                setResetEmail('');
+                setResetError('');
+
+                // Success-Message auf der Haupt-Auth-Seite anzeigen
+                setSuccess(data.message);
+
+                // Success-Message nach 10 Sekunden ausblenden
+                setTimeout(() => {
+                    setSuccess('');
+                }, 10000);
+            } else {
+                setResetError(data.message || 'Fehler beim Senden der Reset-E-Mail');
+            }
+        } catch (error) {
+            setResetError('Ein unerwarteter Fehler ist aufgetreten.');
+        } finally {
+            setResetLoading(false);
+        }
+    };
+
     return (
         <>
             <Navbar />
@@ -146,6 +190,12 @@ export default function AuthPage() {
                         {error && (
                             <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-md">
                                 {error}
+                            </div>
+                        )}
+
+                        {success && (
+                            <div className="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-md">
+                                {success}
                             </div>
                         )}
 
@@ -333,9 +383,17 @@ export default function AuthPage() {
                                         />
                                         <label className="ml-2 block text-sm text-gray-700">Angemeldet bleiben</label>
                                     </div>
-                                    <a href="#" className="text-sm text-green-600 hover:underline">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setShowPasswordReset(true);
+                                            setError('');
+                                            setSuccess('');
+                                        }}
+                                        className="text-sm text-green-600 hover:underline"
+                                    >
                                         Passwort vergessen?
-                                    </a>
+                                    </button>
                                 </div>
                             )}
 
@@ -371,31 +429,84 @@ export default function AuthPage() {
                             >
                                 {loading ? 'Bitte warten...' : isLogin ? 'Anmelden' : 'Registrieren'}
                             </button>
-
-                            {/* Social Media Buttons - nur bei Anmeldung */}
-                            {isLogin && (
-                                <div className="text-center">
-                                    <p className="text-gray-600 mb-4">Oder anmelden mit</p>
-                                    <div className="flex space-x-4">
-                                        <button
-                                            type="button"
-                                            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition-colors duration-300"
-                                        >
-                                            Google
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className="flex-1 bg-gray-800 hover:bg-gray-900 text-white py-2 px-4 rounded-md transition-colors duration-300"
-                                        >
-                                            GitHub
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
                         </form>
                     </div>
                 </div>
             </div>
+
+            {/* Passwort Reset Modal */}
+            {showPasswordReset && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg shadow-xl p-8 max-w-md w-full mx-4">
+                        <div className="text-center mb-6">
+                            <h2 className="text-2xl font-bold text-gray-800 mb-2">🔑 Passwort zurücksetzen</h2>
+                            <p className="text-gray-600">
+                                Geben Sie Ihre E-Mail-Adresse ein und wir senden Ihnen einen Link zum Zurücksetzen Ihres
+                                Passworts.
+                            </p>
+                        </div>
+
+                        {error && (
+                            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-md text-sm">
+                                {error}
+                            </div>
+                        )}
+
+                        {success && (
+                            <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded-md text-sm">
+                                <div className="flex items-center">
+                                    <span className="mr-2">✅</span>
+                                    {success}
+                                </div>
+                            </div>
+                        )}
+
+                        <form onSubmit={handlePasswordReset} className="space-y-6">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">E-Mail-Adresse</label>
+                                <input
+                                    type="email"
+                                    value={resetEmail}
+                                    onChange={(e) => setResetEmail(e.target.value)}
+                                    required
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                                    placeholder="ihre.email@beispiel.de"
+                                />
+                            </div>
+
+                            <div className="flex gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowPasswordReset(false);
+                                        setResetEmail('');
+                                        setError('');
+                                        setSuccess('');
+                                    }}
+                                    className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors"
+                                >
+                                    Abbrechen
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white px-4 py-3 rounded-lg font-medium transition-colors"
+                                >
+                                    {loading ? '📧 Wird gesendet...' : '📧 Reset-Link senden'}
+                                </button>
+                            </div>
+                        </form>
+
+                        <div className="mt-6 p-3 bg-blue-50 rounded-lg">
+                            <p className="text-xs text-blue-800">
+                                <strong>Hinweis:</strong> Überprüfen Sie auch Ihren Spam-Ordner, falls Sie keine E-Mail
+                                erhalten. Der Reset-Link ist 1 Stunde gültig.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <Footer />
         </>
     );

@@ -6,25 +6,25 @@ import SuggestionCard from '@/components/suggestion-card';
 
 const SUGGESTIONS = [
     {
-        img: '/image/blogs/Camper_family.png',
+        img: 'https://www.dropbox.com/scl/fi/861yjkj7qojbe9wshp0x6/Camper_Family.png?rlkey=8libegu5102yhke48gsvv63cn&st=hd0bqhwi&dl=1',
         title: 'Camper für Familien',
         desc: 'Entdecken Sie die besten Wohnmobile für Familienurlaube.',
         href: '/wohnmobile?guests=4&guestMode=minimum' // Filter für 4+ Gäste (Familien)
     },
     {
-        img: '/image/blogs/Camper_haustiererlaubnis.png',
+        img: 'https://www.dropbox.com/scl/fi/fafjo2faikcnlxodtmovf/Camper_haustiererlaubnis.png?rlkey=avkcnna25xb3vm1yxfmrt657i&st=0pscq5q1&dl=1',
         title: 'Camper mit Haustiererlaubnis',
         desc: 'Entdecken Sie die besten Wohnmobile, die Haustiere erlauben.',
         href: '/wohnmobile?pets=true' // Filter für haustierfreundliche Wohnmobile
     },
     {
-        img: '/image/blogs/Camper_paare.png',
+        img: 'https://www.dropbox.com/scl/fi/mlkwflj2dohpczyj0i4ka/Camper_paare.png?rlkey=qtzqc3tsw90at6kfynokrkl0p&st=h7lcp234&dl=1',
         title: 'kleine Camper für Paare',
         desc: 'Entdecken Sie die besten kleinen Camper für romantische Ausflüge zu zweit.',
         href: '/wohnmobile?guests=2&guestMode=exact' // Filter für genau 2 Gäste
     },
     {
-        img: '/image/blogs/camper_alle_budget.png',
+        img: 'https://www.dropbox.com/scl/fi/9gfmnjwmsxr6drx75lbuc/camper_alle_budget.png?rlkey=kwo5cc6vroaawt9daykgl52z2&st=jr986j07&dl=1',
         title: 'günstige Camper für jedes Budget',
         desc: 'Entdecken Sie die besten Wohnmobile zu erschwinglichen Preisen.',
         href: '/wohnmobile?priceMax=100' // Filter für günstigere Wohnmobile (unter 100€/Tag)
