@@ -22,7 +22,7 @@ function Hero() {
             >
                 <Image
                     fill
-                    src="/image/Background.png"
+                    src="https://www.dropbox.com/scl/fi/198ev6x3em2krdh8pg20b/Background.png?rlkey=pa5pov547cm22fph5f1avzrk4&st=mesvbikm&dl=1"
                     alt="Wohnmobil"
                     className="object-cover object-center w-full h-full"
                     sizes="100vw"
@@ -37,7 +37,7 @@ function Hero() {
                     color="blue-gray"
                     className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-medium !leading-tight mb-4 sm:mb-6 md:mb-8 drop-shadow-2xl"
                 >
-                    Willkommen bei <span className="font-bold text-green-800">Wohnmobil Verleih</span>
+                    Willkommen bei <span className="font-bold text-green-800">Vanlife Süd</span>
                 </Typography>
 
                 {/* SearchBar direkt im Hero-Bereich */}

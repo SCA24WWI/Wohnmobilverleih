@@ -13,7 +13,9 @@ export const API_CONFIG = {
             BASE: '/users'
         },
         BOOKINGS: {
-            BASE: '/bookings'
+            BASE: '/bookings',
+            CHECK_AVAILABILITY: '/bookings/check-availability',
+            BY_ID: '/bookings'
         }
     }
 } as const;

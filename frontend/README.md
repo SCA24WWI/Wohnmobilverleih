@@ -1,58 +1,145 @@
-# [NextJS Tailwind Course Landing Page](http://demos.creative-tim.com/nextjs-tailwind-course-landing-page?ref=readme-ntpp) [![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social&logo=twitter)](https://twitter.com/intent/tweet?url=https://www.creative-tim.com/product/nextjs-tailwind-course-landing-page&text=Check%20Material%20Tailwind%202%20Template%20made%20by%20@CreativeTim%20#webdesign%20#template%20#materialdesign%20#react%20https://www.creative-tim.com/product/nextjs-tailwind-course-landing-page)
+# 🚐 Vanlife Süd - Frontend
 
-![version](https://img.shields.io/badge/version-1.0.0-blue.svg) [![GitHub issues open](https://img.shields.io/github/issues/creativetimofficial/nextjs-tailwind-course-landing-page.svg)](https://github.com/creativetimofficial/nextjs-tailwind-course-landing-page/issues?q=is%3Aopen+is%3Aissue) [![GitHub issues closed](https://img.shields.io/github/issues-closed-raw/creativetimofficial/nextjs-tailwind-course-landing-page.svg)](https://github.com/creativetimofficial/nextjs-tailwind-course-landing-page/issues?q=is%3Aissue+is%3Aclosed)
+Next.js 13 Frontend mit TypeScript, Tailwind CSS und Material Tailwind für die Wohnmobil-Buchungsplattform.
 
-![Image](https://s3.amazonaws.com/creativetim_bucket/products/744/original/material-tailwind-react-courses-template-thumbnail.jpg?1697633842)
+## 🛠️ Tech Stack
 
-Introducing Tailwind Course Landing Page, a versatile and engaging landing page template designed using Tailwind CSS and Material Tailwind.
+-   **Next.js 13.4.0** - React Framework mit App Router
+-   **TypeScript 5.x** - Type-safe JavaScript
+-   **Tailwind CSS 3.x** - Utility-first CSS Framework
+-   **Material Tailwind** - React UI Komponenten
+-   **Heroicons** - SVG Icon Library
 
-Are you looking for a professionally designed and highly customizable course landing page template, ideal for clients like educators, institutions, and online course creators to showcase courses, attract potential students, and gain conversions? Your search ends here! We are excited to present to you our Free Course Landing Page Template, meticulously crafted to cater to the needs of course providers.
+## 🚀 Development Setup
 
-This template, created with Tailwind CSS and Material Tailwind, offers seamless customization to align perfectly with your course offerings and branding. The free course landing page template includes essential features such as hero image, stats, features, and testimonial sections.
+```bash
+# Dependencies installieren
+npm install
 
-**Documentation built by Developers**
+# Development Server starten
+npm run dev
 
-Each element is well presented in very complex documentation.
+# Production Build
+npm run build
+npm run start
+```
 
-You can read more about the [documentation here](https://www.material-tailwind.com/docs/react/installation).
+**URLs:** http://localhost:3000
 
-**HELPFUL LINKS**
+## 📁 Projektstruktur
 
-- View [Github Repository](https://github.com/creativetimofficial/nextjs-tailwind-course-landing-page)
-- Check [FAQ Page](https://www.creative-tim.com/faq)
+```
+src/
+├── app/                    # Next.js App Router
+│   ├── auth/              # Authentifizierung
+│   │   └── reset-password/ # Passwort-Reset
+│   ├── buchung/           # Buchungsprozess
+│   ├── wohnmobile/        # Fahrzeug-Seiten
+│   ├── profil/            # Benutzer-Profil
+│   └── page.tsx           # Homepage
+├── components/            # Wiederverwendbare Komponenten
+│   ├── navbar.tsx         # Navigation
+│   ├── footer.tsx         # Footer
+│   ├── search-bar.tsx     # Suchfunktion
+│   └── vehicle-card.tsx   # Fahrzeug-Karten
+├── contexts/             # React Contexts
+│   └── AuthContext.tsx   # Authentifizierung State
+└── config/
+    └── api.ts            # API Konfiguration
+```
 
-## [Demo](https://creative-tim.com/product/nextjs-tailwind-course-landing-page)
+## 🔑 Key Features
 
-## Quick start
+### Authentifizierung
 
-Quick start options:
+-   JWT-basierte Anmeldung/Registrierung
+-   Passwort ändern & Reset per E-Mail
+-   Geschützter Profil-Bereich
 
-- Download from [Creative Tim](https://www.creative-tim.com/product/nextjs-tailwind-course-landing-page?ref=readme-ntpp).
+### Fahrzeug-Management
 
-## Terminal Commands
+-   Erweiterte Suchfunktion mit Filtern
+-   Detailansicht mit Bildergalerie
+-   Verfügbarkeitsprüfung
 
-1. Download and Install NodeJs LTS version from [NodeJs Official Page](https://nodejs.org/en/download/).
-2. Navigate to the root ./ directory of the product and run `npm install` to install our local dependencies.
+### Buchungssystem
 
-## Documentation
+-   Mehrstufiger Buchungsprozess
+-   Realtime-Preisberechnung
+-   Buchungsbestätigung
 
-The documentation for the Material Dashboard is hosted at our [website](https://www.material-tailwind.com/docs/react/installation?ref=readme-ntpp).
+### UI/UX
 
-## Browser Support
+-   Responsive Design für alle Geräte
+-   Material Tailwind Komponenten
+-   Toast-Benachrichtigungen
+-   Loading States
 
-At present, we officially aim to support the last two versions of the following browsers:
+## 📦 Dependencies
 
-<img src="https://s3.amazonaws.com/creativetim_bucket/github/browser/chrome.png" width="64" height="64"> <img src="https://s3.amazonaws.com/creativetim_bucket/github/browser/firefox.png" width="64" height="64"> <img src="https://s3.amazonaws.com/creativetim_bucket/github/browser/edge.png" width="64" height="64"> <img src="https://s3.amazonaws.com/creativetim_bucket/github/browser/safari.png" width="64" height="64"> <img src="https://s3.amazonaws.com/creativetim_bucket/github/browser/opera.png" width="64" height="64">
+```json
+{
+    "@heroicons/react": "^2.0.18",
+    "@material-tailwind/react": "^2.1.2",
+    "next": "^13.4.0",
+    "react": "^18",
+    "react-dom": "^18"
+}
+```
 
-## Resources
+## 🔧 Konfiguration
 
-- [Live Preview](https://demos.creative-tim.com/nextjs-tailwind-course-landing-page?ref=readme-ntpp)
-- [Download Page](https://www.creative-tim.com/product/nextjs-tailwind-course-landing-page?ref=readme-ntpp)
-- Documentation is [here](https://www.material-tailwind.com/docs/react/installation?ref=readme-ntpp)
-- [License Agreement](https://www.creative-tim.com/license?ref=readme-ntpp)
-- [Support](https://www.creative-tim.com/contact-us?ref=readme-ntpp)
-- Issues: [Github Issues Page](https://github.com/creativetimofficial/nextjs-tailwind-course-landing-page/issues)
-- [Nepcha Analytics](https://nepcha.com?ref=readme) - Analytics tool for your website
+### API Endpoints (src/config/api.ts)
+
+```typescript
+const API_BASE_URL = 'http://localhost:3001/api';
+```
+
+### Environment Variables
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3001/api
+```
+
+## 🎨 Styling
+
+Das Projekt verwendet **Tailwind CSS** mit **Material Tailwind** Komponenten:
+
+-   Konsistente Blue-Gray Farbpalette
+-   Responsive Grid-System
+-   Custom Material Design Komponenten
+
+## 📱 Browser Support
+
+Unterstützt moderne Browser:
+
+-   Chrome (letzte 2 Versionen)
+-   Firefox (letzte 2 Versionen)
+-   Safari (letzte 2 Versionen)
+-   Edge (letzte 2 Versionen)
+
+## 🚀 Deployment
+
+```bash
+# Production Build erstellen
+npm run build
+
+# Build testen
+npm run start
+
+# Statische Export (optional)
+npm run export
+```
+
+---
+
+Entwickelt mit ❤️ von **Jannis Köllner** und **Hai Viet Vu**
+
+-   Documentation is [here](https://www.material-tailwind.com/docs/react/installation?ref=readme-ntpp)
+-   [License Agreement](https://www.creative-tim.com/license?ref=readme-ntpp)
+-   [Support](https://www.creative-tim.com/contact-us?ref=readme-ntpp)
+-   Issues: [Github Issues Page](https://github.com/creativetimofficial/nextjs-tailwind-course-landing-page/issues)
+-   [Nepcha Analytics](https://nepcha.com?ref=readme) - Analytics tool for your website
 
 ## Reporting Issues
 
@@ -68,18 +155,18 @@ If you have questions or need help integrating the product please [contact us](h
 
 ## Licensing
 
-- Copyright 2023 [Creative Tim](https://www.creative-tim.com?ref=readme-ntpp)
-- Creative Tim [license](https://www.creative-tim.com/license?ref=readme-ntpp)
+-   Copyright 2023 [Creative Tim](https://www.creative-tim.com?ref=readme-ntpp)
+-   Creative Tim [license](https://www.creative-tim.com/license?ref=readme-ntpp)
 
 ## Useful Links
 
-- [More products](https://www.creative-tim.com/templates?ref=readme-ntpp) from Creative Tim
+-   [More products](https://www.creative-tim.com/templates?ref=readme-ntpp) from Creative Tim
 
-- [Tutorials](https://www.youtube.com/channel/UCVyTG4sCw-rOvB9oHkzZD1w)
+-   [Tutorials](https://www.youtube.com/channel/UCVyTG4sCw-rOvB9oHkzZD1w)
 
-- [Freebies](https://www.creative-tim.com/bootstrap-themes/free?ref=readme-ntpp) from Creative Tim
+-   [Freebies](https://www.creative-tim.com/bootstrap-themes/free?ref=readme-ntpp) from Creative Tim
 
-- [Affiliate Program](https://www.creative-tim.com/affiliates/new?ref=readme-ntpp) (earn money)
+-   [Affiliate Program](https://www.creative-tim.com/affiliates/new?ref=readme-ntpp) (earn money)
 
 ##### Social Media
 

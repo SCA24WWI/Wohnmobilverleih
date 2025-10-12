@@ -7,7 +7,11 @@ interface User {
     email: string;
     vorname: string;
     nachname: string;
-    rolle: 'kunde' | 'anbieter' | 'admin';
+    telefon?: string;
+    adresse?: string;
+    plz?: string;
+    ort?: string;
+    geburtsdatum?: string;
 }
 
 interface AuthContextType {
@@ -24,7 +28,11 @@ interface RegisterData {
     passwort: string;
     vorname: string;
     nachname: string;
-    rolle: 'kunde' | 'anbieter';
+    telefon: string;
+    adresse: string;
+    plz: string;
+    ort: string;
+    geburtsdatum: string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -71,7 +79,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 setUser(null);
             }
         } catch (error) {
-            console.error('Token Verification Error:', error);
             setToken(null);
             setUser(null);
         } finally {
@@ -100,11 +107,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 setUser(data.user);
                 return true;
             } else {
-                console.error('Login failed:', data.message);
                 return false;
             }
         } catch (error) {
-            console.error('Login error:', error);
             return false;
         }
     };
@@ -126,11 +131,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 setUser(data.user);
                 return true;
             } else {
-                console.error('Registration failed:', data.message);
                 return false;
             }
         } catch (error) {
-            console.error('Registration error:', error);
             return false;
         }
     };

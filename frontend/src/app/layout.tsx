@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { Roboto } from 'next/font/google';
 import { Layout } from '@/components';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { ToastProvider } from '@/components/toast-provider';
 
 const roboto = Roboto({
     subsets: ['latin'],
@@ -11,7 +12,7 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
-    title: 'Wohnmobil verleih',
+    title: 'Vanlife Süd',
     description:
         'Introducing Tailwind Course Landing Page, a versatile and engaging landing page template designed using Tailwind CSS and Material Tailwind.'
 };
@@ -25,7 +26,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </head>
             <body className={roboto.className}>
                 <AuthProvider>
-                    <Layout>{children}</Layout>
+                    <ToastProvider>
+                        <Layout>{children}</Layout>
+                    </ToastProvider>
                 </AuthProvider>
             </body>
         </html>

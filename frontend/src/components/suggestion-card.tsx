@@ -6,12 +6,13 @@ interface SuggestionCardProps {
     img: string;
     title: string;
     desc: string;
+    href?: string;
 }
 
-export function SuggestionCard({ img, title, desc }: SuggestionCardProps) {
+export function SuggestionCard({ img, title, desc, href = '/wohnmobile' }: SuggestionCardProps) {
     return (
         <Card color="transparent" shadow={false}>
-            <a href="#">
+            <a href={href}>
                 <CardHeader floated={false} className="mx-0 mt-0 mb-6 h-48">
                     <Image width={768} height={768} src={img} alt={title} className="h-full w-full object-cover" />
                 </CardHeader>
