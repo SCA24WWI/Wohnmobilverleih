@@ -18,6 +18,7 @@ interface Vehicle {
     ort: string;
     preis_pro_tag: number;
     erstellt_am: string;
+    hauptbild: string;
 }
 
 // Erweiterte Extras mit Kategorien
@@ -424,7 +425,7 @@ const BookingPage: React.FC = () => {
                                 <h2 className="text-xl font-semibold mb-4">Ihr gewähltes Fahrzeug</h2>
                                 <div className="flex items-center space-x-4">
                                     <Image
-                                        src="https://www.dropbox.com/scl/fi/9gfmnjwmsxr6drx75lbuc/camper_alle_budget.png?rlkey=kwo5cc6vroaawt9daykgl52z2&st=r9epusuu&dl=1"
+                                        src={vehicle?.hauptbild || ''}
                                         alt={vehicle?.name || ''}
                                         width={120}
                                         height={80}
