@@ -54,6 +54,7 @@ export default function UeberUnsPage() {
                         </div>
                     </div>
 
+                    {/* Mission und Werte */}
                     <div className="mb-20">
                         <div className="grid md:grid-cols-2 gap-8 mb-12">
                             <div className="bg-white p-8 rounded-lg shadow-lg">
