@@ -480,25 +480,6 @@ export default function ProfilPage() {
                                 </a>
                             </div>
                         </div>
-
-                        {/* Account Sicherheit */}
-                        <div className="bg-red-50 border border-red-200 rounded-lg p-6 mt-8">
-                            <h3 className="text-lg font-semibold text-red-800 mb-4">⚠️ Account-Sicherheit</h3>
-                            <p className="text-red-700 mb-4">
-                                Passwort-Änderung und weitere Sicherheitsfeatures werden in einem zukünftigen Update
-                                verfügbar sein.
-                            </p>
-                            <div className="text-sm text-red-600">
-                                <p>
-                                    <strong>Verfügbare Backend-Routen:</strong>
-                                </p>
-                                <ul className="list-disc list-inside mt-2 space-y-1">
-                                    <li>GET /api/auth/profile - Profil laden ✅</li>
-                                    <li>PUT /api/users/:id - Profil aktualisieren ✅</li>
-                                    <li>Passwort ändern - Noch nicht implementiert ⏳</li>
-                                </ul>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </section>
