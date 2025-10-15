@@ -315,9 +315,6 @@ class EmailService {
     }
 
     /**
-     * Test-E-Mail versenden (für Debugging)
-     */
-    /**
      * Generische E-Mail-Versendung
      */
     async sendEmail(to, subject, htmlContent) {

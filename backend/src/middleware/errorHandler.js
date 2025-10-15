@@ -21,7 +21,7 @@ const errorHandler = (err, req, res, next) => {
             message: err.message,
             stack: err.stack
         });
-    } 
+    }
     // Produktionsumgebung: Sende nur grundlegende Fehlerinformationen
     else {
         // Operationelle, vertrauenswürdige Fehler
@@ -30,10 +30,10 @@ const errorHandler = (err, req, res, next) => {
                 status: err.status,
                 message: err.message
             });
-        } 
+        }
         // Programmierfehler: keine Details nach außen geben
         else {
-            console.error('ERROR 💥', err);
+            console.error('ERROR', err);
             res.status(500).json({
                 status: 'error',
                 message: 'Etwas ist schiefgelaufen!'

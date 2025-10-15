@@ -49,7 +49,6 @@ const VehicleDetailContent: React.FC = () => {
     const [endDate, setEndDate] = useState<string>('');
     const [nights, setNights] = useState(0);
 
-    //TODO: ein bild auf dem steht "kein bild vorhanden" zweimal
     // Fallback-Bilder falls keine Bilder in der DB vorhanden sind
     const fallbackImages = [
         'https://www.dropbox.com/scl/fi/9gfmnjwmsxr6drx75lbuc/camper_alle_budget.png?rlkey=kwo5cc6vroaawt9daykgl52z2&st=r9epusuu&dl=1',
